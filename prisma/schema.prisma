@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          UserRole @default(EDITOR)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  products  Product[]
+}
+
+model Product {
+  id                 String              @id @default(cuid())
+  sku                String              @unique
+  ean                String              @default("")
+  manufacturerCode   String              @default("")
+  name               String
+  brand              String              @default("")
+  categoryId         String
+  category           Category            @relation(fields: [categoryId], references: [id])
+  unit               String              @default("szt.")
+  price              Decimal             @db.Decimal(10, 2)
+  vat                Int                 @default(23)
+  stock              Int                 @default(0)
+  minOrder           Int                 @default(1)
+  packageQty         Int                 @default(1)
+  warehouseLocation  String              @default("")
+  weightKg           Decimal             @db.Decimal(8, 3)
+  voltage            String              @default("")
+  current            String              @default("")
+  ipRating           String              @default("")
+  status             ProductStatus       @default(DRAFT)
+  description        String              @db.Text
+  notes              String              @db.Text
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  attributes         ProductAttribute[]
+  substitutes        ProductSubstitute[] @relation("ProductHasSubstitutes")
+  substituteFor      ProductSubstitute[] @relation("ProductIsSubstitute")
+}
+
+model ProductAttribute {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  key       String
+  value     String
+
+  @@index([productId])
+}
+
+model ProductSubstitute {
+  productId    String
+  substituteId String
+  product      Product @relation("ProductHasSubstitutes", fields: [productId], references: [id], onDelete: Cascade)
+  substitute   Product @relation("ProductIsSubstitute", fields: [substituteId], references: [id], onDelete: Cascade)
+
+  @@id([productId, substituteId])
+}

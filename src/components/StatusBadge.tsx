@@ -1,4 +1,4 @@
-import type { ProductStatus } from "@/lib/mock";
+import type { ProductStatus } from "@/lib/product";
 
 const labels: Record<ProductStatus, string> = {
   ACTIVE: "Aktywny",

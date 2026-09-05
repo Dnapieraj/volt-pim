@@ -1,12 +1,16 @@
-import Link from "next/link";
-import { auditPreview, stats } from "@/lib/mock";
+import { ButtonLink } from "@/components/Button";
+import { getDashboardStats } from "@/lib/catalog";
+import { auditPreview } from "@/lib/mock";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const stats = await getDashboardStats();
+
   return (
     <div>
       <h1 className="text-2xl font-semibold">Pulpit</h1>
       <p className="mt-1 text-sm text-muted">
-        Szybki podgląd katalogu. Liczby na razie z przykładu.
+        Liczby i karty produktów biorą się z MariaDB. Żeby tu wejść, trzeba
+        się zalogować.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -37,17 +41,12 @@ export default function DashboardPage() {
         <section className="rounded-lg border border-line bg-card p-5">
           <h2 className="font-medium">Co tu będzie</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
-            <li>Logowanie i role (admin / edytor / podgląd)</li>
-            <li>Prawdziwa baza MariaDB / PostgreSQL</li>
-            <li>CRUD produktów przez REST API</li>
             <li>Import Excela z raportem błędów</li>
+            <li>Historia zmian zapisana w bazie</li>
           </ol>
-          <Link
-            href="/products"
-            className="mt-5 inline-block rounded-md bg-ink px-4 py-2 text-sm text-white hover:bg-copper-dark"
-          >
+          <ButtonLink href="/products" variant="dark" className="mt-5 w-full">
             Przejdź do produktów
-          </Link>
+          </ButtonLink>
         </section>
       </div>
     </div>

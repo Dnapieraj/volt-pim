@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "@/components/Button";
 
 export default function Home() {
   return (
@@ -11,40 +12,29 @@ export default function Home() {
           <div className="text-xl font-semibold">Volt PIM</div>
         </div>
         <div className="flex gap-3 text-sm">
-          <Link href="/login" className="px-4 py-2 text-muted hover:text-ink">
+          <Link href="/register" className="px-4 py-2 text-muted hover:text-ink">
+            Rejestracja
+          </Link>
+          <ButtonLink href="/login" variant="dark">
             Logowanie
-          </Link>
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-ink px-4 py-2 text-white hover:bg-copper-dark"
-          >
-            Otwórz panel
-          </Link>
+          </ButtonLink>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 pb-20 pt-10">
-        <p className="text-sm text-copper">Katalog B2B · wersja wyglądu</p>
+        <p className="text-sm text-copper">Katalog B2B · MariaDB</p>
         <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight tracking-tight">
           Karty produktów, atrybuty i zamienniki — jak w hurtowni, nie jak ToDo.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-muted">
-          Na razie klikasz po ekranach. Logowanie, baza i import Excela dojdą w
-          kolejnych krokach.
+          Zaloguj się, żeby wejść do panelu. Karty SKU zapisują się w bazie.
+          Import Excela i historia zmian dojdą w kolejnych krokach.
         </p>
         <div className="mt-8 flex gap-3">
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-copper px-5 py-2.5 text-sm font-medium text-white hover:bg-copper-dark"
-          >
-            Zobacz pulpit
-          </Link>
-          <Link
-            href="/products"
-            className="rounded-md border border-line bg-card px-5 py-2.5 text-sm hover:border-ink/20"
-          >
-            Lista produktów
-          </Link>
+          <ButtonLink href="/login">Zaloguj się do panelu</ButtonLink>
+          <ButtonLink href="/register" variant="ghost">
+            Załóż konto
+          </ButtonLink>
         </div>
 
         <section className="mt-16 grid gap-4 sm:grid-cols-3">

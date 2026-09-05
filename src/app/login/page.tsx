@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LoginForm } from "@/components/LoginForm";
 
 export default function LoginPage() {
   return (
@@ -9,38 +9,25 @@ export default function LoginPage() {
         </p>
         <h1 className="mt-2 text-2xl font-semibold">Logowanie</h1>
         <p className="mt-2 text-sm text-muted">
-          Na razie przycisk tylko otwiera panel. Prawdziwe hasła później.
+          Konta demo (hasło:{" "}
+          <span className="font-medium text-ink">haslo123</span>
+          ). Admin może je zmienić w panelu → Użytkownicy.
         </p>
-        <form className="mt-6 flex flex-col gap-4" action="/dashboard">
-          <label className="block text-sm">
-            E-mail
-            <input
-              type="email"
-              defaultValue="admin@voltpim.dev"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <label className="block text-sm">
-            Hasło
-            <input
-              type="password"
-              defaultValue="haslo"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <button
-            type="submit"
-            className="rounded-md bg-ink py-2.5 text-sm font-medium text-white hover:bg-copper-dark"
-          >
-            Wejdź do panelu
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted">
-          Nie masz konta?{" "}
-          <Link href="/register" className="text-copper">
-            Rejestracja
-          </Link>
-        </p>
+        <ul className="mt-2 space-y-1 text-sm text-muted">
+          <li>
+            <span className="font-medium text-ink">admin@voltpim.dev</span> —
+            admin
+          </li>
+          <li>
+            <span className="font-medium text-ink">edytor@voltpim.dev</span> —
+            edytor
+          </li>
+          <li>
+            <span className="font-medium text-ink">podglad@voltpim.dev</span>{" "}
+            — podgląd
+          </li>
+        </ul>
+        <LoginForm />
       </div>
     </div>
   );

@@ -2,29 +2,50 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/app/auth-actions";
+import {
+  canImportCatalog,
+  canManageUsers,
+  canWriteProducts,
+  roleLabel,
+  type AppRole,
+} from "@/lib/permissions";
 
 const nav = [
   { href: "/dashboard", label: "Pulpit" },
   { href: "/products", label: "Produkty" },
-  { href: "/products/new", label: "Nowa karta" },
-  { href: "/import", label: "Import Excel" },
+  { href: "/products/new", label: "Nowa karta", write: true },
+  { href: "/import", label: "Import Excel", write: true },
   { href: "/audit", label: "Historia zmian" },
+  { href: "/users", label: "Użytkownicy", admin: true },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: { name: string; role: AppRole };
+}) {
   const pathname = usePathname();
+  const visibleNav = nav.filter((item) => {
+    if (item.admin) return canManageUsers(user.role);
+    if (item.href === "/import") return canImportCatalog(user.role);
+    if (item.write) return canWriteProducts(user.role);
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-56 shrink-0 flex-col bg-sidebar text-[#f5f0e8]">
-        <Link href="/" className="border-b border-white/10 px-5 py-5">
+      <aside className="flex w-56 shrink-0 flex-col bg-sidebar text-on-dark">
+        <Link href="/" className="border-b border-on-dark/10 px-5 py-5">
           <div className="text-[11px] tracking-[0.18em] text-copper uppercase">
             Hurtownia
           </div>
           <div className="mt-1 text-lg font-semibold">Volt PIM</div>
         </Link>
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {nav.map((item) => {
+          {visibleNav.map((item) => {
             const active =
               pathname === item.href ||
               (item.href === "/products" &&
@@ -36,8 +57,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={`rounded-md px-3 py-2 text-sm ${
                   active
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    ? "bg-on-dark/10 text-on-dark"
+                    : "text-on-dark/70 hover:bg-on-dark/5 hover:text-on-dark"
                 }`}
               >
                 {item.label}
@@ -45,19 +66,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-white/10 px-5 py-4 text-xs text-white/50">
+        <div className="border-t border-on-dark/10 px-5 py-4 text-xs text-on-dark/50">
           Zalogowany jako
-          <div className="mt-1 text-sm text-white/90">Daniel · admin</div>
-          <Link href="/login" className="mt-3 inline-block text-copper">
-            Wyloguj
-          </Link>
+          <div className="mt-1 text-sm text-on-dark/90">
+            {user.name} · {roleLabel[user.role]}
+          </div>
+          <form action={logoutAction} className="mt-3">
+            <button type="submit" className="text-sm text-copper">
+              Wyloguj
+            </button>
+          </form>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-line bg-card px-8 py-4">
-          <div className="text-sm text-muted">Katalog produktowy · wersja wyglądu</div>
+          <div className="text-sm text-muted">
+            {user.role === "VIEWER"
+              ? "Katalog produktowy · tylko podgląd"
+              : "Katalog produktowy"}
+          </div>
           <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
-            Bez bazy — dane przykładowe
+            MariaDB · XAMPP
           </span>
         </header>
         <main className="flex-1 px-8 py-6">{children}</main>
