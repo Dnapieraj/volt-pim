@@ -1,83 +1,14 @@
-import { Button, ButtonLink } from "@/components/Button";
+import { ProductForm } from "@/components/ProductForm";
 
 export default function NewProductPage() {
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <h1 className="text-2xl font-semibold">Nowa karta produktu</h1>
       <p className="mt-1 text-sm text-muted">
-        Formularz wygląda jak docelowy. Zapis do bazy zrobimy później.
+        Pełna karta jak w PIM: identyfikacja, magazyn, parametry, atrybuty,
+        zamienniki. Zapis do bazy w kolejnym kroku.
       </p>
-
-      <form className="mt-6 grid gap-4 rounded-lg border border-line bg-card p-6 sm:grid-cols-2">
-        <label className="text-sm sm:col-span-1">
-          SKU
-          <input
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            placeholder="YDY-5X2.5"
-          />
-        </label>
-        <label className="text-sm">
-          Marka
-          <input
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            placeholder="Bitner"
-          />
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Nazwa
-          <input
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            placeholder="Przewód YDY 5×2,5 mm²"
-          />
-        </label>
-        <label className="text-sm">
-          Kategoria
-          <select className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2">
-            <option>Przewody</option>
-            <option>Aparatura</option>
-            <option>Osprzęt</option>
-            <option>Oświetlenie</option>
-          </select>
-        </label>
-        <label className="text-sm">
-          Jednostka
-          <input
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            defaultValue="szt."
-          />
-        </label>
-        <label className="text-sm">
-          Cena (PLN)
-          <input
-            type="number"
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            placeholder="0.00"
-          />
-        </label>
-        <label className="text-sm">
-          Stan magazynowy
-          <input
-            type="number"
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            placeholder="0"
-          />
-        </label>
-        <label className="text-sm sm:col-span-2">
-          Opis
-          <textarea
-            rows={3}
-            className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-          />
-        </label>
-        <div className="flex gap-2 sm:col-span-2">
-          <Button type="button" variant="dark">
-            Zapisz (nieaktywne)
-          </Button>
-          <ButtonLink href="/products" variant="ghost">
-            Anuluj
-          </ButtonLink>
-        </div>
-      </form>
+      <ProductForm mode="create" />
     </div>
   );
 }

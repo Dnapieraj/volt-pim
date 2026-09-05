@@ -5,7 +5,7 @@ const variants = {
     "bg-copper text-on-dark hover:bg-copper-dark focus-visible:outline-copper",
   dark: "bg-ink text-on-dark hover:bg-copper-dark focus-visible:outline-ink",
   ghost:
-    "border border-line bg-card text-ink hover:border-ink/30 focus-visible:outline-ink",
+    "border border-ink/40 bg-paper text-ink hover:border-ink hover:bg-card focus-visible:outline-ink",
 } as const;
 
 type Variant = keyof typeof variants;
@@ -28,9 +28,10 @@ export function Button({
   variant = "primary",
   className = "",
   type = "button",
-}: Common & { type?: "button" | "submit" }) {
+  onClick,
+}: Common & { type?: "button" | "submit"; onClick?: () => void }) {
   return (
-    <button type={type} className={classes(variant, className)}>
+    <button type={type} onClick={onClick} className={classes(variant, className)}>
       {children}
     </button>
   );
