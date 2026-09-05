@@ -16,8 +16,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-56 shrink-0 flex-col bg-sidebar text-[#f5f0e8]">
-        <Link href="/" className="border-b border-white/10 px-5 py-5">
+      <aside className="flex w-56 shrink-0 flex-col bg-sidebar text-on-dark">
+        <Link href="/" className="border-b border-on-dark/10 px-5 py-5">
           <div className="text-[11px] tracking-[0.18em] text-copper uppercase">
             Hurtownia
           </div>
@@ -36,8 +36,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={`rounded-md px-3 py-2 text-sm ${
                   active
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    ? "bg-on-dark/10 text-on-dark"
+                    : "text-on-dark/70 hover:bg-on-dark/5 hover:text-on-dark"
                 }`}
               >
                 {item.label}
@@ -45,9 +45,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-white/10 px-5 py-4 text-xs text-white/50">
+        <div className="border-t border-on-dark/10 px-5 py-4 text-xs text-on-dark/50">
           Zalogowany jako
-          <div className="mt-1 text-sm text-white/90">Daniel · admin</div>
+          <div className="mt-1 text-sm text-on-dark/90">Daniel · admin</div>
           <Link href="/login" className="mt-3 inline-block text-copper">
             Wyloguj
           </Link>

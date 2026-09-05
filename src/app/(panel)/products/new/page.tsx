@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Button, ButtonLink } from "@/components/Button";
 
 export default function NewProductPage() {
   return (
@@ -70,18 +70,12 @@ export default function NewProductPage() {
           />
         </label>
         <div className="flex gap-2 sm:col-span-2">
-          <button
-            type="button"
-            className="rounded-md bg-ink px-4 py-2 text-sm text-white"
-          >
+          <Button type="button" variant="dark">
             Zapisz (nieaktywne)
-          </button>
-          <Link
-            href="/products"
-            className="rounded-md border border-line px-4 py-2 text-sm"
-          >
+          </Button>
+          <ButtonLink href="/products" variant="ghost">
             Anuluj
-          </Link>
+          </ButtonLink>
         </div>
       </form>
     </div>

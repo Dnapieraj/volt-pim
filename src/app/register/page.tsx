@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/Button";
 
 export default function RegisterPage() {
   return (
@@ -35,12 +36,9 @@ export default function RegisterPage() {
               className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
             />
           </label>
-          <button
-            type="submit"
-            className="rounded-md bg-ink py-2.5 text-sm font-medium text-white hover:bg-copper-dark"
-          >
+          <Button type="submit" variant="dark">
             Utwórz konto (makieta)
-          </button>
+          </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted">
           Masz już konto?{" "}

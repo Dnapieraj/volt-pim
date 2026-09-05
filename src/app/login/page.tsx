@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/Button";
 
 export default function LoginPage() {
   return (
@@ -28,12 +29,9 @@ export default function LoginPage() {
               className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
             />
           </label>
-          <button
-            type="submit"
-            className="rounded-md bg-ink py-2.5 text-sm font-medium text-white hover:bg-copper-dark"
-          >
+          <Button type="submit" variant="dark">
             Wejdź do panelu
-          </button>
+          </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted">
           Nie masz konta?{" "}

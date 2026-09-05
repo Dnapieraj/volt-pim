@@ -1,3 +1,5 @@
+import { Button } from "@/components/Button";
+
 export default function ImportPage() {
   return (
     <div className="max-w-xl">
@@ -11,12 +13,9 @@ export default function ImportPage() {
         <p className="mt-1 text-sm text-muted">
           Kolumny: SKU, nazwa, marka, kategoria, cena, stan
         </p>
-        <button
-          type="button"
-          className="mt-5 rounded-md border border-line px-4 py-2 text-sm"
-        >
+        <Button type="button" variant="ghost" className="mt-5">
           Wybierz plik (później)
-        </button>
+        </Button>
       </div>
 
       <div className="mt-6 rounded-lg border border-line bg-card p-4 text-sm text-muted">

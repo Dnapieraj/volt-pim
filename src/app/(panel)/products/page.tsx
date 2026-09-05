@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "@/components/Button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { products } from "@/lib/mock";
 
@@ -20,18 +21,10 @@ export default function ProductsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link
-            href="/import"
-            className="rounded-md border border-line bg-card px-4 py-2 text-sm hover:border-ink/20"
-          >
+          <ButtonLink href="/import" variant="ghost">
             Import
-          </Link>
-          <Link
-            href="/products/new"
-            className="rounded-md bg-copper px-4 py-2 text-sm font-medium text-white hover:bg-copper-dark"
-          >
-            Nowa karta
-          </Link>
+          </ButtonLink>
+          <ButtonLink href="/products/new">Nowa karta</ButtonLink>
         </div>
       </div>
 

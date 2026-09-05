@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "@/components/Button";
 
 export default function Home() {
   return (
@@ -14,12 +15,9 @@ export default function Home() {
           <Link href="/login" className="px-4 py-2 text-muted hover:text-ink">
             Logowanie
           </Link>
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-ink px-4 py-2 text-white hover:bg-copper-dark"
-          >
+          <ButtonLink href="/dashboard" variant="dark">
             Otwórz panel
-          </Link>
+          </ButtonLink>
         </div>
       </header>
 
@@ -33,18 +31,10 @@ export default function Home() {
           kolejnych krokach.
         </p>
         <div className="mt-8 flex gap-3">
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-copper px-5 py-2.5 text-sm font-medium text-white hover:bg-copper-dark"
-          >
-            Zobacz pulpit
-          </Link>
-          <Link
-            href="/products"
-            className="rounded-md border border-line bg-card px-5 py-2.5 text-sm hover:border-ink/20"
-          >
+          <ButtonLink href="/dashboard">Zobacz pulpit</ButtonLink>
+          <ButtonLink href="/products" variant="ghost">
             Lista produktów
-          </Link>
+          </ButtonLink>
         </div>
 
         <section className="mt-16 grid gap-4 sm:grid-cols-3">

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/Button";
 import { auditPreview, stats } from "@/lib/mock";
 
 export default function DashboardPage() {
@@ -42,12 +42,9 @@ export default function DashboardPage() {
             <li>CRUD produktów przez REST API</li>
             <li>Import Excela z raportem błędów</li>
           </ol>
-          <Link
-            href="/products"
-            className="mt-5 inline-block rounded-md bg-ink px-4 py-2 text-sm text-white hover:bg-copper-dark"
-          >
+          <ButtonLink href="/products" variant="dark" className="mt-5 w-full">
             Przejdź do produktów
-          </Link>
+          </ButtonLink>
         </section>
       </div>
     </div>
