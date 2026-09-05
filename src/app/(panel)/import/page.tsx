@@ -1,6 +1,9 @@
 import { Button } from "@/components/Button";
+import { requireImportAccess } from "@/lib/current-user";
 
-export default function ImportPage() {
+export default async function ImportPage() {
+  await requireImportAccess();
+
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-semibold">Import z Excela</h1>

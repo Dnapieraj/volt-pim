@@ -237,16 +237,36 @@ async function main() {
   }
 
   const passwordHash = await hash("haslo123", 10);
-  await prisma.user.upsert({
-    where: { email: "admin@voltpim.dev" },
-    update: { name: "Daniel", role: UserRole.ADMIN, passwordHash },
-    create: {
-      name: "Daniel",
+  const demoUsers = [
+    {
       email: "admin@voltpim.dev",
-      passwordHash,
+      name: "Daniel",
       role: UserRole.ADMIN,
     },
-  });
+    {
+      email: "edytor@voltpim.dev",
+      name: "Anna",
+      role: UserRole.EDITOR,
+    },
+    {
+      email: "podglad@voltpim.dev",
+      name: "Marek",
+      role: UserRole.VIEWER,
+    },
+  ];
+
+  for (const user of demoUsers) {
+    await prisma.user.upsert({
+      where: { email: user.email },
+      update: { name: user.name, role: user.role, passwordHash },
+      create: {
+        name: user.name,
+        email: user.email,
+        passwordHash,
+        role: user.role,
+      },
+    });
+  }
 }
 
 main()

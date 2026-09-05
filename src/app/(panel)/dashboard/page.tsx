@@ -41,7 +41,6 @@ export default async function DashboardPage() {
         <section className="rounded-lg border border-line bg-card p-5">
           <h2 className="font-medium">Co tu będzie</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
-            <li>Role w panelu (admin / edytor / podgląd)</li>
             <li>Import Excela z raportem błędów</li>
             <li>Historia zmian zapisana w bazie</li>
           </ol>

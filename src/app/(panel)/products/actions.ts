@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/current-user";
+import {
+  canDeleteProducts,
+  canWriteProducts,
+  type AppRole,
+} from "@/lib/permissions";
 import {
   createProduct,
   deleteProduct,
@@ -14,10 +19,16 @@ import {
   type ProductActionState,
 } from "@/lib/product-input";
 
-async function requireUser(): Promise<ProductActionState | null> {
-  const session = await auth();
-  if (!session?.user) {
+async function requirePermission(
+  allowed: (role: AppRole) => boolean,
+  deniedMessage: string,
+): Promise<ProductActionState | null> {
+  const user = await getSessionUser();
+  if (!user) {
     return { error: "Sesja wygasła. Zaloguj się ponownie." };
+  }
+  if (!allowed(user.role)) {
+    return { error: deniedMessage };
   }
   return null;
 }
@@ -35,7 +46,10 @@ export async function createProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  const denied = await requireUser();
+  const denied = await requirePermission(
+    canWriteProducts,
+    "Brak uprawnień do tworzenia kart. Twoja rola to podgląd.",
+  );
   if (denied) return denied;
 
   const parsed = parseProductForm(formData);
@@ -52,7 +66,10 @@ export async function updateProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  const denied = await requireUser();
+  const denied = await requirePermission(
+    canWriteProducts,
+    "Brak uprawnień do edycji kart. Twoja rola to podgląd.",
+  );
   if (denied) return denied;
 
   const id = formId(formData);
@@ -72,7 +89,10 @@ export async function deleteProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  const denied = await requireUser();
+  const denied = await requirePermission(
+    canDeleteProducts,
+    "Usuwać karty może tylko administrator.",
+  );
   if (denied) return denied;
 
   const id = formId(formData);

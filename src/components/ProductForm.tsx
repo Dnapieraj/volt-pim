@@ -40,9 +40,15 @@ type Props = {
   product?: Product;
   mode: "create" | "edit";
   categories: string[];
+  canDelete?: boolean;
 };
 
-export function ProductForm({ product, mode, categories }: Props) {
+export function ProductForm({
+  product,
+  mode,
+  categories,
+  canDelete = false,
+}: Props) {
   const initial = product ?? emptyProduct;
   const categoryOptions = categories.length ? categories : defaultCategories;
   const action = mode === "create" ? createProductAction : updateProductAction;
@@ -388,7 +394,7 @@ export function ProductForm({ product, mode, categories }: Props) {
         </div>
       </form>
 
-      {mode === "edit" && product ? (
+      {mode === "edit" && product && canDelete ? (
         <div className="mt-8 border-t border-line pt-6">
           <p className="text-sm text-muted">
             Usunięcie kasuje kartę z MariaDB. Zamienniki innych SKU, które na nią

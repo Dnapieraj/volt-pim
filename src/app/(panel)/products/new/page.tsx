@@ -1,8 +1,12 @@
 import { ProductForm } from "@/components/ProductForm";
 import { getCategoryNames } from "@/lib/catalog";
+import { requireProductWrite } from "@/lib/current-user";
 
 export default async function NewProductPage() {
-  const categories = await getCategoryNames();
+  const [, categories] = await Promise.all([
+    requireProductWrite(),
+    getCategoryNames(),
+  ]);
 
   return (
     <div className="max-w-3xl">

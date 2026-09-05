@@ -3,31 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/auth-actions";
-
-type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
+import {
+  canImportCatalog,
+  canWriteProducts,
+  roleLabel,
+  type AppRole,
+} from "@/lib/permissions";
 
 const nav = [
   { href: "/dashboard", label: "Pulpit" },
   { href: "/products", label: "Produkty" },
-  { href: "/products/new", label: "Nowa karta" },
-  { href: "/import", label: "Import Excel" },
+  { href: "/products/new", label: "Nowa karta", write: true },
+  { href: "/import", label: "Import Excel", write: true },
   { href: "/audit", label: "Historia zmian" },
 ];
-
-const roleLabel: Record<UserRole, string> = {
-  ADMIN: "admin",
-  EDITOR: "edytor",
-  VIEWER: "podgląd",
-};
 
 export function AppShell({
   children,
   user,
 }: {
   children: React.ReactNode;
-  user: { name: string; role: UserRole };
+  user: { name: string; role: AppRole };
 }) {
   const pathname = usePathname();
+  const visibleNav = nav.filter((item) => {
+    if (item.href === "/import") return canImportCatalog(user.role);
+    if (item.write) return canWriteProducts(user.role);
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen">
@@ -39,7 +42,7 @@ export function AppShell({
           <div className="mt-1 text-lg font-semibold">Volt PIM</div>
         </Link>
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {nav.map((item) => {
+          {visibleNav.map((item) => {
             const active =
               pathname === item.href ||
               (item.href === "/products" &&
@@ -74,7 +77,11 @@ export function AppShell({
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-line bg-card px-8 py-4">
-          <div className="text-sm text-muted">Katalog produktowy</div>
+          <div className="text-sm text-muted">
+            {user.role === "VIEWER"
+              ? "Katalog produktowy · tylko podgląd"
+              : "Katalog produktowy"}
+          </div>
           <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
             MariaDB · XAMPP
           </span>

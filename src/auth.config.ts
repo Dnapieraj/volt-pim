@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
+import { isAppRole, isCatalogWritePath } from "@/lib/permissions";
 
 function isPanelPath(pathname: string) {
   return (
@@ -33,6 +34,11 @@ export const authConfig = {
 
       if (isAuthPath(pathname) && loggedIn) {
         return NextResponse.redirect(new URL("/dashboard", request.nextUrl));
+      }
+
+      const role = isAppRole(auth?.user?.role) ? auth.user.role : undefined;
+      if (role === "VIEWER" && isCatalogWritePath(pathname)) {
+        return NextResponse.redirect(new URL("/products", request.nextUrl));
       }
 
       return true;

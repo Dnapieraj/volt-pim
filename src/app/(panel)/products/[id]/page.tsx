@@ -4,6 +4,11 @@ import { ButtonLink } from "@/components/Button";
 import { DeleteProductButton } from "@/components/DeleteProductButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getProductById } from "@/lib/catalog";
+import { requireSessionUser } from "@/lib/current-user";
+import {
+  canDeleteProducts,
+  canWriteProducts,
+} from "@/lib/permissions";
 
 function formatPrice(value: number) {
   return value.toLocaleString("pl-PL", {
@@ -18,8 +23,13 @@ export default async function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await getProductById(id);
+  const [user, product] = await Promise.all([
+    requireSessionUser(),
+    getProductById(id),
+  ]);
   if (!product) notFound();
+  const canWrite = canWriteProducts(user.role);
+  const canDelete = canDeleteProducts(user.role);
 
   return (
     <div className="max-w-3xl">
@@ -37,8 +47,14 @@ export default async function ProductPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={product.status} />
-          <ButtonLink href={`/products/${product.id}/edit`}>Edytuj kartę</ButtonLink>
-          <DeleteProductButton id={product.id} sku={product.sku} />
+          {canWrite ? (
+            <ButtonLink href={`/products/${product.id}/edit`}>
+              Edytuj kartę
+            </ButtonLink>
+          ) : null}
+          {canDelete ? (
+            <DeleteProductButton id={product.id} sku={product.sku} />
+          ) : null}
         </div>
       </div>
 
