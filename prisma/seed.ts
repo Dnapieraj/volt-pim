@@ -173,6 +173,7 @@ const catalog = [
 ];
 
 async function main() {
+  await prisma.auditLog.deleteMany();
   await prisma.productSubstitute.deleteMany();
   await prisma.productAttribute.deleteMany();
   await prisma.product.deleteMany();

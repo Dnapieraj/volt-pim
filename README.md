@@ -2,7 +2,7 @@
 
 Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
-**Status:** UI + MariaDB. Catalog CRUD, login/register, roles, user admin, and Excel/CSV import persist to the database. Change history comes next.
+**Status:** UI + MariaDB. Catalog CRUD, login/register, roles, user admin, Excel/CSV import, and change history persist to the database.
 
 ## Stack
 
@@ -59,5 +59,5 @@ Required column: `sku`. New cards also need `nazwa`. Download the template from 
 - Product list (search + filters) from the database
 - Product card and edit form (edit hidden for viewers)
 - Excel/CSV import with a per-row error report (editors and admins)
-- Change history placeholder
+- Change history from MariaDB (create, edit, delete, import)
 - Users (admin): edit logins, passwords, and roles
