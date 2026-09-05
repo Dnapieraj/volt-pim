@@ -34,6 +34,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id ?? "";
+        token.role = user.role;
+        token.name = user.name;
+        token.email = user.email;
+      }
+
+      const id = String(token.id ?? "");
+      if (!id) return token;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id },
+        select: { name: true, email: true, role: true },
+      });
+      if (!dbUser) {
+        token.id = "";
+        token.role = undefined;
+        return token;
+      }
+
+      token.name = dbUser.name;
+      token.email = dbUser.email;
+      token.role = dbUser.role;
+      return token;
+    },
+  },
 });
 
 export const { GET, POST } = handlers;

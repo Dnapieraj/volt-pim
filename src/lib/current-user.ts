@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import {
   canDeleteProducts,
   canImportCatalog,
+  canManageUsers,
   canWriteProducts,
   type AppRole,
 } from "@/lib/permissions";
@@ -44,4 +45,15 @@ export async function requireImportAccess() {
   return user;
 }
 
-export { canDeleteProducts, canWriteProducts, canImportCatalog };
+export async function requireUserAdmin() {
+  const user = await requireSessionUser();
+  if (!canManageUsers(user.role)) redirect("/dashboard");
+  return user;
+}
+
+export {
+  canDeleteProducts,
+  canWriteProducts,
+  canImportCatalog,
+  canManageUsers,
+};

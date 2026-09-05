@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/auth-actions";
 import {
   canImportCatalog,
+  canManageUsers,
   canWriteProducts,
   roleLabel,
   type AppRole,
@@ -16,6 +17,7 @@ const nav = [
   { href: "/products/new", label: "Nowa karta", write: true },
   { href: "/import", label: "Import Excel", write: true },
   { href: "/audit", label: "Historia zmian" },
+  { href: "/users", label: "Użytkownicy", admin: true },
 ];
 
 export function AppShell({
@@ -27,6 +29,7 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const visibleNav = nav.filter((item) => {
+    if (item.admin) return canManageUsers(user.role);
     if (item.href === "/import") return canImportCatalog(user.role);
     if (item.write) return canWriteProducts(user.role);
     return true;

@@ -14,11 +14,13 @@ Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
 | Role | Access |
 | --- | --- |
-| Admin | Full catalog, including delete |
+| Admin | Full catalog, including delete. Manages users, logins, and roles in **Użytkownicy**. |
 | Editor | Create and edit products, import |
 | Viewer | Read-only list, cards, dashboard, audit |
 
-New registrations get the editor role. Demo accounts after seed (password `haslo123`):
+Admins edit accounts in the panel at `/users` (name, email/login, password, role). New registrations still get the editor role.
+
+Demo accounts after seed (password `haslo123`) — change them in the app if you want:
 
 - `admin@voltpim.dev` — admin
 - `edytor@voltpim.dev` — editor
@@ -52,3 +54,4 @@ Open [http://localhost:3000](http://localhost:3000).
 - Product card and edit form (edit hidden for viewers)
 - Excel import placeholder (editors and admins)
 - Change history placeholder
+- Users (admin): edit logins, passwords, and roles
