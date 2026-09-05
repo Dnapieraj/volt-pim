@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/app/auth-actions";
+
+type UserRole = "ADMIN" | "EDITOR" | "VIEWER";
 
 const nav = [
   { href: "/dashboard", label: "Pulpit" },
@@ -11,7 +14,19 @@ const nav = [
   { href: "/audit", label: "Historia zmian" },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+const roleLabel: Record<UserRole, string> = {
+  ADMIN: "admin",
+  EDITOR: "edytor",
+  VIEWER: "podgląd",
+};
+
+export function AppShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: { name: string; role: UserRole };
+}) {
   const pathname = usePathname();
 
   return (
@@ -47,15 +62,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="border-t border-on-dark/10 px-5 py-4 text-xs text-on-dark/50">
           Zalogowany jako
-          <div className="mt-1 text-sm text-on-dark/90">Daniel · admin</div>
-          <Link href="/login" className="mt-3 inline-block text-copper">
-            Wyloguj
-          </Link>
+          <div className="mt-1 text-sm text-on-dark/90">
+            {user.name} · {roleLabel[user.role]}
+          </div>
+          <form action={logoutAction} className="mt-3">
+            <button type="submit" className="text-sm text-copper">
+              Wyloguj
+            </button>
+          </form>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-line bg-card px-8 py-4">
-          <div className="text-sm text-muted">Katalog produktowy · wersja wyglądu</div>
+          <div className="text-sm text-muted">Katalog produktowy</div>
           <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
             MariaDB · XAMPP
           </span>

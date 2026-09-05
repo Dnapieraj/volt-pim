@@ -1,4 +1,5 @@
-import { PrismaClient, ProductStatus } from "@prisma/client";
+import { PrismaClient, ProductStatus, UserRole } from "@prisma/client";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -234,6 +235,18 @@ async function main() {
       });
     }
   }
+
+  const passwordHash = await hash("haslo123", 10);
+  await prisma.user.upsert({
+    where: { email: "admin@voltpim.dev" },
+    update: { name: "Daniel", role: UserRole.ADMIN, passwordHash },
+    create: {
+      name: "Daniel",
+      email: "admin@voltpim.dev",
+      passwordHash,
+      role: UserRole.ADMIN,
+    },
+  });
 }
 
 main()

@@ -9,8 +9,8 @@ export default async function DashboardPage() {
     <div>
       <h1 className="text-2xl font-semibold">Pulpit</h1>
       <p className="mt-1 text-sm text-muted">
-        Liczby i karty produktów biorą się z MariaDB. Zapis create / update /
-        delete już działa.
+        Liczby i karty produktów biorą się z MariaDB. Żeby tu wejść, trzeba
+        się zalogować.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
         <section className="rounded-lg border border-line bg-card p-5">
           <h2 className="font-medium">Co tu będzie</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
-            <li>Logowanie i role (admin / edytor / podgląd)</li>
+            <li>Role w panelu (admin / edytor / podgląd)</li>
             <li>Import Excela z raportem błędów</li>
             <li>Historia zmian zapisana w bazie</li>
           </ol>

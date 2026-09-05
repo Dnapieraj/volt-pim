@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/Button";
+import { LoginForm } from "@/components/LoginForm";
 
 export default function LoginPage() {
   return (
@@ -10,35 +9,11 @@ export default function LoginPage() {
         </p>
         <h1 className="mt-2 text-2xl font-semibold">Logowanie</h1>
         <p className="mt-2 text-sm text-muted">
-          Na razie przycisk tylko otwiera panel. Prawdziwe hasła później.
+          Konto startowe:{" "}
+          <span className="font-medium text-ink">admin@voltpim.dev</span> /{" "}
+          <span className="font-medium text-ink">haslo123</span>
         </p>
-        <form className="mt-6 flex flex-col gap-4" action="/dashboard">
-          <label className="block text-sm">
-            E-mail
-            <input
-              type="email"
-              defaultValue="admin@voltpim.dev"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <label className="block text-sm">
-            Hasło
-            <input
-              type="password"
-              defaultValue="haslo"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <Button type="submit" variant="dark">
-            Wejdź do panelu
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted">
-          Nie masz konta?{" "}
-          <Link href="/register" className="text-copper">
-            Rejestracja
-          </Link>
-        </p>
+        <LoginForm />
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/Button";
+import { RegisterForm } from "@/components/RegisterForm";
 
 export default function RegisterPage() {
   return (
@@ -10,42 +9,9 @@ export default function RegisterPage() {
         </p>
         <h1 className="mt-2 text-2xl font-semibold">Rejestracja</h1>
         <p className="mt-2 text-sm text-muted">
-          Wygląd formularza. Konto w bazie zrobimy w następnym kroku.
+          Nowe konto dostaje rolę edytora. Hasło min. 8 znaków.
         </p>
-        <form className="mt-6 flex flex-col gap-4" action="/dashboard">
-          <label className="block text-sm">
-            Imię
-            <input
-              type="text"
-              placeholder="Anna"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <label className="block text-sm">
-            E-mail
-            <input
-              type="email"
-              placeholder="anna@hurtownia.pl"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <label className="block text-sm">
-            Hasło
-            <input
-              type="password"
-              className="mt-1 w-full rounded-md border border-line bg-paper px-3 py-2"
-            />
-          </label>
-          <Button type="submit" variant="dark">
-            Utwórz konto (makieta)
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-muted">
-          Masz już konto?{" "}
-          <Link href="/login" className="text-copper">
-            Logowanie
-          </Link>
-        </p>
+        <RegisterForm />
       </div>
     </div>
   );
