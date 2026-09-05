@@ -9,7 +9,8 @@ export default async function DashboardPage() {
     <div>
       <h1 className="text-2xl font-semibold">Pulpit</h1>
       <p className="mt-1 text-sm text-muted">
-        Liczby biorą się z MariaDB (XAMPP), nie z mocka.
+        Liczby i karty produktów biorą się z MariaDB. Zapis create / update /
+        delete już działa.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -41,7 +42,6 @@ export default async function DashboardPage() {
           <h2 className="font-medium">Co tu będzie</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
             <li>Logowanie i role (admin / edytor / podgląd)</li>
-            <li>CRUD produktów przez REST API</li>
             <li>Import Excela z raportem błędów</li>
             <li>Historia zmian zapisana w bazie</li>
           </ol>

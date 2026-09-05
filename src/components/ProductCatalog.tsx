@@ -55,7 +55,7 @@ export function ProductCatalog({
         {visible.length} z {products.length} pozycji
         {normalizedQuery || status !== "ALL" || category !== "ALL"
           ? " (po filtrach)"
-          : " w katalogu przykładowym"}
+          : " w bazie"}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">

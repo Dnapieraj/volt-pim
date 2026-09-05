@@ -2,7 +2,7 @@
 
 Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
-**Status:** UI + MariaDB. Product list, cards, and dashboard stats come from the database. Auth and write API come next.
+**Status:** UI + MariaDB. Product list, cards, dashboard stats, and product CRUD persist to the database. Auth, Excel import, and change history come next.
 
 ## Stack
 

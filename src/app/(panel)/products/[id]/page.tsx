@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/Button";
+import { DeleteProductButton } from "@/components/DeleteProductButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getProductById } from "@/lib/catalog";
 
@@ -34,9 +35,10 @@ export default async function ProductPage({
             {product.ean ? ` · EAN ${product.ean}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={product.status} />
           <ButtonLink href={`/products/${product.id}/edit`}>Edytuj kartę</ButtonLink>
+          <DeleteProductButton id={product.id} sku={product.sku} />
         </div>
       </div>
 

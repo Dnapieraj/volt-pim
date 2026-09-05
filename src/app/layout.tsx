@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Volt PIM — katalog produktowy",
-  description: "Panel do kart produktów, jak w hurtowni. Na razie sam wygląd.",
+  description: "Panel do kart produktów hurtowni elektrotechnicznej.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
