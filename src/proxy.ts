@@ -13,6 +13,7 @@ export const config = {
     "/audit/:path*",
     "/users",
     "/users/:path*",
+    "/api/export",
     "/login",
     "/register",
   ],

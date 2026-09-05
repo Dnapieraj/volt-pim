@@ -1,0 +1,3 @@
+sku,nazwa,marka,kategoria,cena,stan,ean,jednostka,vat,status,zamienniki,atrybuty
+LZ-20A,"Rozłącznik izolacyjny 20A",Legrand,Aparatura,24.5,15,5901234999001,szt.,23,ACTIVE,,"Bieguny:2P | Icu:10 kA"
+YDY-5X2.5,"Przewód YDY 5×2,5 mm²",Bitner,Przewody,6.4,200,5901234999002,m,23,ACTIVE,YDY-3X2.5,"Przekrój:5×2,5 mm² | Izolacja:PVC"

@@ -1,16 +1,20 @@
+import Link from "next/link";
+import { AuditList } from "@/components/AuditList";
 import { ButtonLink } from "@/components/Button";
+import { getAuditLogs } from "@/lib/audit";
 import { getDashboardStats } from "@/lib/catalog";
-import { auditPreview } from "@/lib/mock";
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+  const [stats, entries] = await Promise.all([
+    getDashboardStats(),
+    getAuditLogs(6),
+  ]);
 
   return (
     <div>
       <h1 className="text-2xl font-semibold">Pulpit</h1>
       <p className="mt-1 text-sm text-muted">
-        Liczby i karty produktów biorą się z MariaDB. Żeby tu wejść, trzeba
-        się zalogować.
+        Liczby, karty i historia zmian biorą się z MariaDB.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -28,22 +32,20 @@ export default async function DashboardPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-line bg-card p-5">
           <h2 className="font-medium">Ostatnie zmiany</h2>
-          <ul className="mt-4 divide-y divide-line">
-            {auditPreview.map((row) => (
-              <li key={row.what + row.when} className="py-3 text-sm">
-                <span className="font-medium">{row.who}</span> {row.action}{" "}
-                <span className="text-copper">{row.what}</span>
-                <div className="text-xs text-muted">{row.when}</div>
-              </li>
-            ))}
-          </ul>
+          <AuditList
+            entries={entries}
+            empty="Jeszcze nic nie zapisano. Edytuj kartę albo zrób import."
+          />
+          <Link href="/audit" className="mt-4 inline-block text-sm text-copper">
+            Pełna historia zmian
+          </Link>
         </section>
         <section className="rounded-lg border border-line bg-card p-5">
-          <h2 className="font-medium">Co tu będzie</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
-            <li>Import Excela z raportem błędów</li>
-            <li>Historia zmian zapisana w bazie</li>
-          </ol>
+          <h2 className="font-medium">Katalog</h2>
+          <p className="mt-4 text-sm text-muted">
+            Karty SKU, import Excela i historia zmian są już w bazie. Role
+            ustawisz w panelu użytkowników.
+          </p>
           <ButtonLink href="/products" variant="dark" className="mt-5 w-full">
             Przejdź do produktów
           </ButtonLink>

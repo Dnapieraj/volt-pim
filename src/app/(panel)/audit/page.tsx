@@ -1,23 +1,22 @@
-import { auditPreview } from "@/lib/mock";
+import { AuditList } from "@/components/AuditList";
+import { getAuditLogs } from "@/lib/audit";
 
-export default function AuditPage() {
+export default async function AuditPage() {
+  const entries = await getAuditLogs(100);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold">Historia zmian</h1>
       <p className="mt-1 text-sm text-muted">
-        Kto, kiedy, co zmienił. Na razie przykładowe wpisy.
+        Kto, kiedy, co zmienił — wpisy z MariaDB po edycji kart i imporcie.
       </p>
-      <ul className="mt-6 divide-y divide-line rounded-lg border border-line bg-card">
-        {auditPreview.map((row) => (
-          <li key={row.what + row.when} className="px-5 py-4">
-            <div className="text-sm">
-              <span className="font-medium">{row.who}</span> {row.action}{" "}
-              <span className="text-copper">{row.what}</span>
-            </div>
-            <div className="mt-1 text-xs text-muted">{row.when}</div>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-6">
+        <AuditList
+          boxed
+          entries={entries}
+          empty="Brak wpisów. Historia pojawi się po dodaniu, edycji, usunięciu albo imporcie kart."
+        />
+      </div>
     </div>
   );
 }
