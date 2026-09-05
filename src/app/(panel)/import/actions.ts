@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { recordAudit } from "@/lib/audit";
 import { getSessionUser } from "@/lib/current-user";
 import { canImportCatalog } from "@/lib/permissions";
 import {
@@ -38,9 +39,17 @@ export async function importCatalogAction(
   const buffer = await file.arrayBuffer();
   const summary = await importCatalog(buffer);
 
+  await recordAudit({
+    actor: user,
+    action: "IMPORT",
+    productName: file.name,
+    summary: `${file.name}: ${summary.created} nowych, ${summary.updated} zaktualizowanych, ${summary.errors.length} z błędami`,
+  });
+
   revalidatePath("/products");
   revalidatePath("/dashboard");
   revalidatePath("/import");
+  revalidatePath("/audit");
 
   return {
     error: "",
