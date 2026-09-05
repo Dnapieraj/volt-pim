@@ -57,7 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-between border-b border-line bg-card px-8 py-4">
           <div className="text-sm text-muted">Katalog produktowy · wersja wyglądu</div>
           <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
-            Bez bazy — dane przykładowe
+            MariaDB · XAMPP
           </span>
         </header>
         <main className="flex-1 px-8 py-6">{children}</main>

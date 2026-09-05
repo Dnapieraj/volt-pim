@@ -1,7 +1,13 @@
 import { ButtonLink } from "@/components/Button";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { getCategoryNames, getProducts } from "@/lib/catalog";
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategoryNames(),
+  ]);
+
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -15,7 +21,7 @@ export default function ProductsPage() {
           <ButtonLink href="/products/new">Nowa karta</ButtonLink>
         </div>
       </div>
-      <ProductCatalog />
+      <ProductCatalog products={products} categories={categories} />
     </div>
   );
 }

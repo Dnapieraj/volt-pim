@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/Button";
 import { StatusBadge } from "@/components/StatusBadge";
-import { products } from "@/lib/mock";
+import { getProductById } from "@/lib/catalog";
 
 function formatPrice(value: number) {
   return value.toLocaleString("pl-PL", {
@@ -17,7 +17,7 @@ export default async function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = products.find((item) => item.id === id);
+  const product = await getProductById(id);
   if (!product) notFound();
 
   return (

@@ -2,32 +2,36 @@
 
 Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
-**Status:** UI mock. Screens work with sample data. Auth, database, and REST API come next.
+**Status:** UI + MariaDB. Product list, cards, and dashboard stats come from the database. Auth and write API come next.
 
 ## Stack
 
 - Next.js 16, TypeScript, Tailwind CSS
-- NextAuth, Prisma, MariaDB/PostgreSQL — installed, not wired yet
+- Prisma 6 + MariaDB (XAMPP)
 
-## Run locally
+## Database (local)
+
+1. Start MySQL in XAMPP.
+2. Create database `voltpim` if it does not exist.
+3. Copy `.env.example` to `.env`.
+4. Run:
 
 ```bash
-npm install
+npx prisma migrate dev
+npx prisma db seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+`npx prisma studio` opens a table browser.
+
 ## Screens
 
 - Landing
-- Login / register (buttons open the panel, no real auth yet)
-- Dashboard
-- Product list and product card
-- New product form
+- Login / register (UI only for now)
+- Dashboard with live counts from MariaDB
+- Product list (search + filters) from the database
+- Product card and edit form
 - Excel import placeholder
 - Change history placeholder
-
-## Demo accounts (later)
-
-Not live yet. Placeholder in the login form: `admin@voltpim.dev`.

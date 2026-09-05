@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/StatusBadge";
-import {
-  categories,
-  products,
-  type ProductStatus,
-} from "@/lib/mock";
+import type { Product, ProductStatus } from "@/lib/product";
 
 function formatPrice(value: number) {
   return value.toLocaleString("pl-PL", {
@@ -16,7 +12,7 @@ function formatPrice(value: number) {
   });
 }
 
-function matchesQuery(query: string, product: (typeof products)[number]) {
+function matchesQuery(query: string, product: Product) {
   if (!query) return true;
   const haystack = [
     product.sku,
@@ -32,7 +28,13 @@ function matchesQuery(query: string, product: (typeof products)[number]) {
   return haystack.includes(query);
 }
 
-export function ProductCatalog() {
+export function ProductCatalog({
+  products,
+  categories,
+}: {
+  products: Product[];
+  categories: string[];
+}) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"ALL" | ProductStatus>("ALL");
   const [category, setCategory] = useState("ALL");

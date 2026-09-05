@@ -8,7 +8,7 @@ import {
   type Product,
   type ProductAttribute,
   units,
-} from "@/lib/mock";
+} from "@/lib/product";
 
 const inputClass =
   "mt-1 w-full rounded-md border border-line bg-paper px-3 py-2 text-ink";
