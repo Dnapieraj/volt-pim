@@ -8,7 +8,8 @@ function isPanelPath(pathname: string) {
     pathname.startsWith("/products") ||
     pathname.startsWith("/import") ||
     pathname.startsWith("/audit") ||
-    pathname.startsWith("/users")
+    pathname.startsWith("/users") ||
+    pathname.startsWith("/api/export")
   );
 }
 

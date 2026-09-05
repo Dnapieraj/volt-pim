@@ -21,16 +21,21 @@ export default async function ProductsPage() {
         <div>
           <h1 className="text-2xl font-semibold">Produkty</h1>
         </div>
-        {canWrite ? (
-          <div className="flex gap-2">
-            {canImportCatalog(user.role) ? (
-              <ButtonLink href="/import" variant="ghost">
-                Import
-              </ButtonLink>
-            ) : null}
-            <ButtonLink href="/products/new">Nowa karta</ButtonLink>
-          </div>
-        ) : null}
+        <div className="flex gap-2">
+          <ButtonLink href="/api/export" variant="ghost">
+            Eksport Excel
+          </ButtonLink>
+          {canWrite ? (
+            <>
+              {canImportCatalog(user.role) ? (
+                <ButtonLink href="/import" variant="ghost">
+                  Import
+                </ButtonLink>
+              ) : null}
+              <ButtonLink href="/products/new">Nowa karta</ButtonLink>
+            </>
+          ) : null}
+        </div>
       </div>
       <ProductCatalog products={products} categories={categories} />
     </div>

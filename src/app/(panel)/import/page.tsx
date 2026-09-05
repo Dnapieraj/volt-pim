@@ -27,12 +27,17 @@ export default async function ImportPage() {
           </span>
           .
         </p>
-        <a
-          href="/wzor-import-volt-pim.csv"
-          className="mt-3 inline-block text-copper"
-        >
-          Pobierz wzór CSV
-        </a>
+        <div className="mt-3 flex flex-wrap gap-4">
+          <a href="/wzor-import-volt-pim.csv" className="text-copper">
+            Pobierz wzór CSV
+          </a>
+          <a href="/api/export" className="text-copper">
+            Pobierz aktualny katalog (Excel)
+          </a>
+          <a href="/api/export?format=csv" className="text-copper">
+            Pobierz aktualny katalog (CSV)
+          </a>
+        </div>
       </div>
 
       <ImportForm />
