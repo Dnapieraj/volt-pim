@@ -27,8 +27,8 @@ export default function Home() {
           Karty produktów, atrybuty i zamienniki — jak w hurtowni, nie jak ToDo.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-muted">
-          Zaloguj się, żeby wejść do panelu. Karty SKU zapisują się w bazie.
-          Import Excela i historia zmian dojdą w kolejnych krokach.
+          Zaloguj się, żeby wejść do panelu. Karty SKU i import Excela
+          zapisują się w bazie. Historia zmian dojdzie w kolejnym kroku.
         </p>
         <div className="mt-8 flex gap-3">
           <ButtonLink href="/login">Zaloguj się do panelu</ButtonLink>
@@ -49,7 +49,7 @@ export default function Home() {
             },
             {
               title: "Import",
-              body: "Miejsce na Excel — na razie tylko makieta.",
+              body: "CSV/XLSX z raportem błędów po wierszach.",
             },
           ].map((item) => (
             <div

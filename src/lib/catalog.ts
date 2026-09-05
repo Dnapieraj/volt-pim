@@ -84,6 +84,14 @@ export async function getProductById(id: string): Promise<Product | null> {
   return row ? mapProduct(row) : null;
 }
 
+export async function getProductBySku(sku: string): Promise<Product | null> {
+  const row = await prisma.product.findUnique({
+    where: { sku },
+    include,
+  });
+  return row ? mapProduct(row) : null;
+}
+
 export async function getDashboardStats() {
   const [total, active, outOfStock] = await Promise.all([
     prisma.product.count(),

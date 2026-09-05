@@ -2,7 +2,7 @@
 
 Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
-**Status:** UI + MariaDB. Catalog CRUD, login/register, and roles persist to the database. Excel import and change history come next.
+**Status:** UI + MariaDB. Catalog CRUD, login/register, roles, user admin, and Excel/CSV import persist to the database. Change history comes next.
 
 ## Stack
 
@@ -45,6 +45,12 @@ Open [http://localhost:3000](http://localhost:3000).
 
 `npx prisma db seed` resets catalog data and upserts the three demo users.
 
+## Excel / CSV import
+
+Editors and admins upload a file at `/import`. New SKUs are created, existing SKUs are updated. Invalid rows are skipped and listed in an error report.
+
+Required column: `sku`. New cards also need `nazwa`. Download the template from the import page (`/wzor-import-volt-pim.csv`).
+
 ## Screens
 
 - Landing
@@ -52,6 +58,6 @@ Open [http://localhost:3000](http://localhost:3000).
 - Dashboard with live counts from MariaDB
 - Product list (search + filters) from the database
 - Product card and edit form (edit hidden for viewers)
-- Excel import placeholder (editors and admins)
+- Excel/CSV import with a per-row error report (editors and admins)
 - Change history placeholder
 - Users (admin): edit logins, passwords, and roles
