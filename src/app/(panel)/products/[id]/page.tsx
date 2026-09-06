@@ -58,6 +58,20 @@ export default async function ProductPage({
         </div>
       </div>
 
+      {product.images.length > 0 ? (
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {product.images.map((image) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={image.id}
+              src={image.url}
+              alt={product.name}
+              className="aspect-square w-full rounded-lg border border-line object-cover"
+            />
+          ))}
+        </div>
+      ) : null}
+
       <dl className="mt-8 grid grid-cols-2 gap-4 rounded-lg border border-line bg-card p-6 text-sm">
         <div>
           <dt className="text-muted">Kod producenta</dt>

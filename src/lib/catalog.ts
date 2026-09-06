@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { Product } from "@/lib/product";
+import type { Product, ProductStatus } from "@/lib/product";
 import type { ProductWriteInput } from "@/lib/product-input";
+import {
+  deleteImageFiles,
+  deleteProductImageFolder,
+} from "@/lib/product-images";
 
 export type WriteResult =
   | { ok: true; id: string }
@@ -31,6 +35,7 @@ function mapProduct(row: {
   category: { name: string };
   attributes: { key: string; value: string }[];
   substitutes: { substitute: { sku: string } }[];
+  images: { id: string; url: string; sortOrder: number }[];
 }): Product {
   return {
     id: row.id,
@@ -59,6 +64,11 @@ function mapProduct(row: {
       value: item.value,
     })),
     substitutes: row.substitutes.map((item) => item.substitute.sku),
+    images: row.images.map((item) => ({
+      id: item.id,
+      url: item.url,
+      sortOrder: item.sortOrder,
+    })),
   };
 }
 
@@ -66,6 +76,7 @@ const include = {
   category: true,
   attributes: true,
   substitutes: { include: { substitute: true } },
+  images: { orderBy: { sortOrder: "asc" as const } },
 } as const;
 
 export async function getProducts(): Promise<Product[]> {
@@ -206,6 +217,51 @@ export async function createProduct(
   }
 }
 
+export async function attachProductImages(
+  productId: string,
+  images: { url: string; sortOrder: number }[],
+): Promise<WriteResult> {
+  try {
+    if (images.length === 0) return { ok: true, id: productId };
+    await prisma.productImage.createMany({
+      data: images.map((image) => ({
+        productId,
+        url: image.url,
+        sortOrder: image.sortOrder,
+      })),
+    });
+    return { ok: true, id: productId };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export async function removeProductImages(
+  productId: string,
+  imageIds: string[],
+): Promise<WriteResult> {
+  try {
+    if (imageIds.length === 0) return { ok: true, id: productId };
+    const rows = await prisma.productImage.findMany({
+      where: { productId, id: { in: imageIds } },
+      select: { id: true, url: true },
+    });
+    if (rows.length === 0) return { ok: true, id: productId };
+
+    await prisma.productImage.deleteMany({
+      where: { id: { in: rows.map((row) => row.id) } },
+    });
+    await deleteImageFiles(rows.map((row) => row.url));
+    return { ok: true, id: productId };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export async function countProductImages(productId: string) {
+  return prisma.productImage.count({ where: { productId } });
+}
+
 export async function updateProduct(
   id: string,
   input: ProductWriteInput,
@@ -249,7 +305,58 @@ export async function deleteProduct(id: string): Promise<WriteResult> {
       return { ok: false, error: "Nie znaleziono karty." };
     }
     await prisma.product.delete({ where: { id } });
+    await deleteProductImageFolder(id);
     return { ok: true, id };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export type BulkWriteInput = {
+  ids: string[];
+  status?: ProductStatus;
+  category?: string;
+};
+
+export async function bulkUpdateProducts(
+  input: BulkWriteInput,
+): Promise<
+  { ok: true; count: number; skus: string[] } | { ok: false; error: string }
+> {
+  const ids = [...new Set(input.ids.filter(Boolean))];
+  if (ids.length === 0) {
+    return { ok: false, error: "Zaznacz co najmniej jedną kartę." };
+  }
+  if (!input.status && !input.category) {
+    return { ok: false, error: "Wybierz status albo kategorię do zmiany." };
+  }
+
+  try {
+    const existing = await prisma.product.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, sku: true },
+      orderBy: { sku: "asc" },
+    });
+    if (existing.length === 0) {
+      return { ok: false, error: "Nie znaleziono zaznaczonych kart." };
+    }
+
+    const data: { status?: ProductStatus; categoryId?: string } = {};
+    if (input.status) data.status = input.status;
+    if (input.category) {
+      data.categoryId = await resolveCategoryId(input.category);
+    }
+
+    await prisma.product.updateMany({
+      where: { id: { in: existing.map((row) => row.id) } },
+      data,
+    });
+
+    return {
+      ok: true,
+      count: existing.length,
+      skus: existing.map((row) => row.sku),
+    };
   } catch (error) {
     return { ok: false, error: prismaErrorMessage(error) };
   }

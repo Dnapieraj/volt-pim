@@ -65,7 +65,11 @@ export function ProductForm({
 
   return (
     <>
-      <form action={formAction} className="mt-6 space-y-6">
+      <form
+        action={formAction}
+        encType="multipart/form-data"
+        className="mt-6 space-y-6"
+      >
         {mode === "edit" && product ? (
           <input type="hidden" name="id" value={product.id} />
         ) : null}
@@ -267,6 +271,50 @@ export function ProductForm({
               rows={2}
               defaultValue={initial.notes}
               className={inputClass}
+            />
+          </Field>
+        </section>
+
+        <section className="rounded-lg border border-line bg-card p-6">
+          <h2 className="text-sm font-medium">Zdjęcia</h2>
+          <p className="mt-1 text-xs text-muted">
+            JPG, PNG lub WebP · max 2 MB · do 5 zdjęć na kartę. Pierwsze jest
+            miniaturą na liście.
+          </p>
+
+          {initial.images.length > 0 ? (
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {initial.images.map((image) => (
+                <li
+                  key={image.id}
+                  className="flex items-center gap-3 rounded-md border border-line bg-paper p-2"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image.url}
+                    alt=""
+                    className="h-16 w-16 rounded object-cover"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-muted">
+                    <input
+                      type="checkbox"
+                      name="removeImageId"
+                      value={image.id}
+                    />
+                    Usuń przy zapisie
+                  </label>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <Field label="Dodaj zdjęcia" wide>
+            <input
+              name="photos"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className={`${inputClass} file:mr-3 file:rounded file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:text-on-dark`}
             />
           </Field>
         </section>
