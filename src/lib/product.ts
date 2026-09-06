@@ -5,6 +5,12 @@ export type ProductAttribute = {
   value: string;
 };
 
+export type ProductImage = {
+  id: string;
+  url: string;
+  sortOrder: number;
+};
+
 export type Product = {
   id: string;
   sku: string;
@@ -29,6 +35,7 @@ export type Product = {
   notes: string;
   attributes: ProductAttribute[];
   substitutes: string[];
+  images: ProductImage[];
 };
 
 export const categories = [
@@ -66,4 +73,5 @@ export const emptyProduct: Product = {
   notes: "",
   attributes: [{ key: "", value: "" }],
   substitutes: [""],
+  images: [],
 };

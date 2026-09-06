@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: "Panel do kart produktów hurtowni elektrotechnicznej.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pl"

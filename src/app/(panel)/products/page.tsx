@@ -37,7 +37,11 @@ export default async function ProductsPage() {
           ) : null}
         </div>
       </div>
-      <ProductCatalog products={products} categories={categories} />
+      <ProductCatalog
+        products={products}
+        categories={categories}
+        canWrite={canWrite}
+      />
     </div>
   );
 }
