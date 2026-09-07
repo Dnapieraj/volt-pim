@@ -1,7 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { Product } from "@/lib/product";
+import type { Product, ProductStatus } from "@/lib/product";
 import type { ProductWriteInput } from "@/lib/product-input";
+import {
+  PAGE_SIZE,
+  clampPage,
+  type CatalogQuery,
+  type CatalogSort,
+} from "@/lib/product-query";
 
 export type WriteResult =
   | { ok: true; id: string }
@@ -31,7 +37,9 @@ function mapProduct(row: {
   imagePath: string;
   category: { name: string };
   attributes: { key: string; value: string }[];
-  substitutes: { substitute: { sku: string } }[];
+  substitutes: {
+    substitute: { id: string; sku: string; name: string };
+  }[];
 }): Product {
   return {
     id: row.id,
@@ -61,6 +69,11 @@ function mapProduct(row: {
       value: item.value,
     })),
     substitutes: row.substitutes.map((item) => item.substitute.sku),
+    substituteLinks: row.substitutes.map((item) => ({
+      id: item.substitute.id,
+      sku: item.substitute.sku,
+      name: item.substitute.name,
+    })),
   };
 }
 
@@ -70,12 +83,109 @@ const include = {
   substitutes: { include: { substitute: true } },
 } as const;
 
+function orderByFor(sort: CatalogSort): Prisma.ProductOrderByWithRelationInput {
+  switch (sort) {
+    case "name":
+      return { name: "asc" };
+    case "price":
+      return { price: "asc" };
+    case "stock":
+      return { stock: "asc" };
+    case "updated":
+      return { updatedAt: "desc" };
+    default:
+      return { sku: "asc" };
+  }
+}
+
+async function resolveCategoryFilter(name: string) {
+  if (name === "ALL") {
+    return { ok: true as const, id: undefined as string | undefined };
+  }
+  const row = await prisma.category.findUnique({
+    where: { name },
+    select: { id: true },
+  });
+  if (!row) return { ok: false as const };
+  return { ok: true as const, id: row.id };
+}
+
+async function productWhere(
+  query: Pick<CatalogQuery, "q" | "status" | "category">,
+): Promise<Prisma.ProductWhereInput | { empty: true }> {
+  const where: Prisma.ProductWhereInput = {};
+  if (query.status !== "ALL") where.status = query.status;
+
+  const category = await resolveCategoryFilter(query.category);
+  if (!category.ok) return { empty: true };
+  if (category.id) where.categoryId = category.id;
+
+  const q = query.q.trim();
+  if (q) {
+    where.OR = [
+      { sku: { contains: q } },
+      { name: { contains: q } },
+      { brand: { contains: q } },
+      { ean: { contains: q } },
+      { manufacturerCode: { contains: q } },
+      { warehouseLocation: { contains: q } },
+    ];
+  }
+  return where;
+}
+
 export async function getProducts(): Promise<Product[]> {
   const rows = await prisma.product.findMany({
     include,
     orderBy: { sku: "asc" },
   });
   return rows.map(mapProduct);
+}
+
+export async function listProducts(
+  query: Pick<CatalogQuery, "q" | "status" | "category" | "sort">,
+): Promise<Product[]> {
+  const where = await productWhere(query);
+  if ("empty" in where) return [];
+  const rows = await prisma.product.findMany({
+    where,
+    include,
+    orderBy: orderByFor(query.sort),
+  });
+  return rows.map(mapProduct);
+}
+
+export async function searchProducts(query: CatalogQuery) {
+  const where = await productWhere(query);
+  if ("empty" in where) {
+    return { items: [] as Product[], total: 0, page: 1, pageCount: 1 };
+  }
+
+  const total = await prisma.product.count({ where });
+  const page = clampPage(query.page, total);
+  const rows = await prisma.product.findMany({
+    where,
+    include,
+    orderBy: orderByFor(query.sort),
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
+
+  return {
+    items: rows.map(mapProduct),
+    total,
+    page,
+    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE) || 1),
+  };
+}
+
+export async function getSkuOptions(excludeSku?: string) {
+  const rows = await prisma.product.findMany({
+    orderBy: { sku: "asc" },
+    select: { sku: true, name: true },
+    take: 500,
+  });
+  return rows.filter((row) => row.sku !== excludeSku);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -95,17 +205,18 @@ export async function getProductBySku(sku: string): Promise<Product | null> {
 }
 
 export async function getDashboardStats() {
-  const [total, active, outOfStock] = await Promise.all([
+  const [total, active, outOfStock, categories] = await Promise.all([
     prisma.product.count(),
     prisma.product.count({ where: { status: "ACTIVE" } }),
     prisma.product.count({ where: { stock: 0 } }),
+    prisma.category.count(),
   ]);
 
   return [
     { label: "Produkty w bazie", value: String(total) },
     { label: "Aktywne SKU", value: String(active) },
     { label: "Braki magazynowe", value: String(outOfStock) },
-    { label: "Źródło danych", value: "MariaDB" },
+    { label: "Kategorie", value: String(categories) },
   ];
 }
 
@@ -267,6 +378,52 @@ export async function deleteProduct(id: string): Promise<WriteResult> {
     }
     await prisma.product.delete({ where: { id } });
     return { ok: true, id };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export type BulkWriteResult =
+  | { ok: true; count: number; skus: string[] }
+  | { ok: false; error: string };
+
+export async function bulkUpdateProducts(
+  ids: string[],
+  patch: { status?: ProductStatus; category?: string },
+): Promise<BulkWriteResult> {
+  const unique = [...new Set(ids.filter(Boolean))].slice(0, 50);
+  if (unique.length === 0) {
+    return { ok: false, error: "Zaznacz przynajmniej jedną kartę." };
+  }
+  if (!patch.status && !patch.category) {
+    return { ok: false, error: "Wybierz nowy status albo kategorię." };
+  }
+
+  const data: { status?: ProductStatus; categoryId?: string } = {};
+  if (patch.status) data.status = patch.status;
+  if (patch.category) {
+    data.categoryId = await resolveCategoryId(patch.category);
+  }
+
+  try {
+    const rows = await prisma.product.findMany({
+      where: { id: { in: unique } },
+      select: { sku: true },
+    });
+    if (rows.length === 0) {
+      return { ok: false, error: "Nie znaleziono zaznaczonych kart." };
+    }
+
+    await prisma.product.updateMany({
+      where: { id: { in: unique } },
+      data,
+    });
+
+    return {
+      ok: true,
+      count: rows.length,
+      skus: rows.map((row) => row.sku),
+    };
   } catch (error) {
     return { ok: false, error: prismaErrorMessage(error) };
   }

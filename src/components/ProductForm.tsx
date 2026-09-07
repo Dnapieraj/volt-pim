@@ -41,6 +41,7 @@ type Props = {
   product?: Product;
   mode: "create" | "edit";
   categories: string[];
+  catalogSkus?: { sku: string; name: string }[];
   canDelete?: boolean;
 };
 
@@ -48,6 +49,7 @@ export function ProductForm({
   product,
   mode,
   categories,
+  catalogSkus = [],
   canDelete = false,
 }: Props) {
   const initial = product ?? emptyProduct;
@@ -200,6 +202,13 @@ export function ProductForm({
                 <option key={item}>{item}</option>
               ))}
             </select>
+          </Field>
+          <Field label="Nowa kategoria (opcjonalnie)">
+            <input
+              name="newCategory"
+              placeholder="Zostaw puste, żeby użyć listy"
+              className={inputClass}
+            />
           </Field>
           <Field label="Status karty">
             <select
@@ -403,7 +412,7 @@ export function ProductForm({
 
         <section className="rounded-lg border border-line bg-card p-6">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-medium">Zamienniki (SKU)</h2>
+            <h2 className="text-sm font-medium">Zamienniki (SKU z katalogu)</h2>
             <Button
               type="button"
               variant="ghost"
@@ -413,12 +422,24 @@ export function ProductForm({
               Dodaj zamiennik
             </Button>
           </div>
+          <p className="mt-1 text-xs text-muted">
+            Wpisz SKU albo wybierz z podpowiedzi. Na karcie zamiennik będzie
+            linkiem.
+          </p>
+          <datalist id="catalog-skus">
+            {catalogSkus.map((item) => (
+              <option key={item.sku} value={item.sku}>
+                {item.name}
+              </option>
+            ))}
+          </datalist>
           <div className="mt-4 space-y-2">
             {substitutes.map((sku, index) => (
               <div key={index} className="flex gap-2">
                 <input
                   name="substituteSku"
                   value={sku}
+                  list="catalog-skus"
                   onChange={(event) =>
                     setSubstitutes((rows) =>
                       rows.map((item, i) =>

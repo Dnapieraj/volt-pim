@@ -30,6 +30,7 @@ export type Product = {
   imagePath: string;
   attributes: ProductAttribute[];
   substitutes: string[];
+  substituteLinks: { id: string; sku: string; name: string }[];
 };
 
 export const categories = [
@@ -68,4 +69,5 @@ export const emptyProduct: Product = {
   imagePath: "",
   attributes: [{ key: "", value: "" }],
   substitutes: [""],
+  substituteLinks: [],
 };

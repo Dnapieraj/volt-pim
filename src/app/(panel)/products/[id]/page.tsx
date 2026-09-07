@@ -6,17 +6,11 @@ import { ProductPhoto } from "@/components/ProductPhoto";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getProductById } from "@/lib/catalog";
 import { requireSessionUser } from "@/lib/current-user";
+import { formatPrice } from "@/lib/format";
 import {
   canDeleteProducts,
   canWriteProducts,
 } from "@/lib/permissions";
-
-function formatPrice(value: number) {
-  return value.toLocaleString("pl-PL", {
-    style: "currency",
-    currency: "PLN",
-  });
-}
 
 export default async function ProductPage({
   params,
@@ -62,7 +56,7 @@ export default async function ProductPage({
         </div>
       </div>
 
-      <dl className="mt-8 grid grid-cols-2 gap-4 rounded-lg border border-line bg-card p-6 text-sm">
+      <dl className="mt-8 grid grid-cols-1 gap-4 rounded-lg border border-line bg-card p-4 text-sm sm:grid-cols-2 sm:p-6">
         <div>
           <dt className="text-muted">Kod producenta</dt>
           <dd className="mt-1 font-medium">{product.manufacturerCode || "—"}</dd>
@@ -104,15 +98,15 @@ export default async function ProductPage({
             {product.packageQty} szt. · {product.weightKg} kg
           </dd>
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <dt className="text-muted">Opis</dt>
           <dd className="mt-1">{product.description || "—"}</dd>
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <dt className="text-muted">Notatka wewnętrzna</dt>
           <dd className="mt-1">{product.notes || "—"}</dd>
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <dt className="text-muted">Atrybuty</dt>
           <dd className="mt-1">
             {product.attributes.length === 0
@@ -122,12 +116,26 @@ export default async function ProductPage({
                   .join(" · ")}
           </dd>
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <dt className="text-muted">Zamienniki</dt>
           <dd className="mt-1">
-            {product.substitutes.length === 0
-              ? "brak"
-              : product.substitutes.join(", ")}
+            {product.substituteLinks.length === 0 ? (
+              "brak"
+            ) : (
+              <ul className="space-y-1">
+                {product.substituteLinks.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={`/products/${item.id}`}
+                      className="text-copper hover:underline"
+                    >
+                      <span className="font-mono text-xs">{item.sku}</span>
+                      <span className="text-ink"> — {item.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </dd>
         </div>
       </dl>

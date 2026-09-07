@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { recordAudit } from "@/lib/audit";
 import {
+  bulkUpdateProducts,
   createProduct,
   deleteProduct,
   getProductById,
@@ -21,9 +22,12 @@ import {
   deleteManagedImage,
   readProductImageUpload,
 } from "@/lib/product-image";
+import type { ProductStatus } from "@/lib/product";
 import {
+  emptyBulkState,
   formId,
   parseProductForm,
+  type BulkActionState,
   type ProductActionState,
 } from "@/lib/product-input";
 
@@ -175,4 +179,50 @@ export async function deleteProductAction(
 
   refreshCatalog(id);
   redirect("/products");
+}
+
+export async function bulkUpdateProductsAction(
+  _prev: BulkActionState,
+  formData: FormData,
+): Promise<BulkActionState> {
+  const actor = await requireActor(
+    canWriteProducts,
+    "Brak uprawnień do edycji kart. Twoja rola to podgląd.",
+  );
+  if ("error" in actor) return { error: actor.error, message: "" };
+
+  const ids = formData
+    .getAll("ids")
+    .map((item) => String(item).trim())
+    .filter(Boolean);
+  const statusRaw = String(formData.get("bulkStatus") ?? "").trim();
+  const category = String(formData.get("bulkCategory") ?? "").trim();
+  const status =
+    statusRaw === "ACTIVE" || statusRaw === "DRAFT" || statusRaw === "ARCHIVED"
+      ? (statusRaw as ProductStatus)
+      : undefined;
+
+  const result = await bulkUpdateProducts(ids, {
+    status,
+    category: category || undefined,
+  });
+  if (!result.ok) return { error: result.error, message: "" };
+
+  const bits = [
+    status ? `status ${status}` : "",
+    category ? `kategoria ${category}` : "",
+  ].filter(Boolean);
+
+  await recordAudit({
+    actor: actor.user,
+    action: "BULK_UPDATE",
+    sku: result.skus.slice(0, 8).join(", "),
+    summary: `Zbiorczo zmieniono ${result.count} kart (${bits.join(", ")}): ${result.skus.join(", ")}`,
+  });
+
+  refreshCatalog();
+  return {
+    ...emptyBulkState,
+    message: `Zapisano ${result.count} kart.`,
+  };
 }

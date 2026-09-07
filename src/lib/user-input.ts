@@ -65,3 +65,19 @@ export type UpdateUserInput = {
   password: string;
   role: AppRole;
 };
+
+export const accountSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Podaj imię (min. 2 znaki).")
+    .max(80, "Imię jest za długie."),
+  currentPassword: z.string().min(1, "Podaj obecne hasło."),
+  newPassword: z
+    .string()
+    .max(72, "Hasło jest za długie.")
+    .refine(
+      (value) => value.length === 0 || value.length >= 8,
+      "Nowe hasło musi mieć co najmniej 8 znaków albo zostaw puste.",
+    ),
+});

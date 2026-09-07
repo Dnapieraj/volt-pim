@@ -13,11 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Volt PIM — katalog produktowy",
-  description: "Panel do kart produktów hurtowni elektrotechnicznej.",
+  title: {
+    default: "Volt PIM",
+    template: "%s · Volt PIM",
+  },
+  description:
+    "Katalog produktowy B2B: karty SKU, zamienniki, import Excel, role i historia zmian.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="pl"

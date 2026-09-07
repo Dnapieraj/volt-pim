@@ -7,6 +7,13 @@ export type ProductActionState = {
 
 export const emptyActionState: ProductActionState = { error: "" };
 
+export type BulkActionState = {
+  error: string;
+  message: string;
+};
+
+export const emptyBulkState: BulkActionState = { error: "", message: "" };
+
 const statusSchema = z.enum(["ACTIVE", "DRAFT", "ARCHIVED"]);
 
 function text(formData: FormData, key: string) {
@@ -74,7 +81,7 @@ export function parseProductForm(
     manufacturerCode: text(formData, "manufacturerCode"),
     name: text(formData, "name"),
     brand: text(formData, "brand"),
-    category: text(formData, "category"),
+    category: text(formData, "newCategory") || text(formData, "category"),
     unit: text(formData, "unit"),
     price: formData.get("price") || "0",
     vat: formData.get("vat") || "23",

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getSessionUser } from "@/lib/current-user";
+import { recordAudit } from "@/lib/audit";
+import { getSessionUser, type SessionUser } from "@/lib/current-user";
 import { canManageUsers, isAppRole } from "@/lib/permissions";
 import {
   createUserSchema,
@@ -16,7 +17,7 @@ import {
   updateManagedUser,
 } from "@/lib/users";
 
-async function requireAdmin(): Promise<UserActionState | { userId: string }> {
+async function requireAdmin(): Promise<UserActionState | { user: SessionUser }> {
   const user = await getSessionUser();
   if (!user) {
     return { error: "Sesja wygasła. Zaloguj się ponownie.", success: "" };
@@ -27,7 +28,7 @@ async function requireAdmin(): Promise<UserActionState | { userId: string }> {
       success: "",
     };
   }
-  return { userId: user.id };
+  return { user };
 }
 
 function firstIssue(error: { issues: { message: string }[] }) {
@@ -62,7 +63,15 @@ export async function createUserAction(
   });
   if (!result.ok) return { error: result.error, success: "" };
 
+  await recordAudit({
+    actor: admin.user,
+    action: "ACCOUNT",
+    productName: parsed.data.email,
+    summary: `Utworzono konto ${parsed.data.email} z rolą ${parsed.data.role}`,
+  });
+
   revalidatePath("/users");
+  revalidatePath("/audit");
   return { error: "", success: "Konto zostało utworzone." };
 }
 
@@ -95,9 +104,17 @@ export async function updateUserAction(
   });
   if (!result.ok) return { error: result.error, success: "" };
 
-  revalidatePath("/users");
+  await recordAudit({
+    actor: admin.user,
+    action: "ACCOUNT",
+    productName: parsed.data.email,
+    summary: `Zmieniono konto ${parsed.data.email} (rola ${parsed.data.role}${parsed.data.password ? ", nowe hasło" : ""})`,
+  });
 
-  if (parsed.data.id === admin.userId && parsed.data.role !== "ADMIN") {
+  revalidatePath("/users");
+  revalidatePath("/audit");
+
+  if (parsed.data.id === admin.user.id && parsed.data.role !== "ADMIN") {
     redirect("/dashboard");
   }
 
@@ -114,9 +131,16 @@ export async function deleteUserAction(
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { error: "Brak identyfikatora konta.", success: "" };
 
-  const result = await deleteManagedUser(id, admin.userId);
+  const result = await deleteManagedUser(id, admin.user.id);
   if (!result.ok) return { error: result.error, success: "" };
 
+  await recordAudit({
+    actor: admin.user,
+    action: "ACCOUNT",
+    summary: `Usunięto konto ${id}`,
+  });
+
   revalidatePath("/users");
+  revalidatePath("/audit");
   return emptyUserState;
 }

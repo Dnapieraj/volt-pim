@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
-import { getProducts } from "@/lib/catalog";
+import { listProducts } from "@/lib/catalog";
 import { buildCatalogExport, type ExportFormat } from "@/lib/export-catalog";
+import { parseCatalogQuery } from "@/lib/product-query";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -12,7 +13,10 @@ export async function GET(request: NextRequest) {
 
   const format: ExportFormat =
     request.nextUrl.searchParams.get("format") === "csv" ? "csv" : "xlsx";
-  const products = await getProducts();
+  const query = parseCatalogQuery(
+    Object.fromEntries(request.nextUrl.searchParams.entries()),
+  );
+  const products = await listProducts(query);
   const file = buildCatalogExport(products, format);
 
   return new NextResponse(new Uint8Array(file.body), {

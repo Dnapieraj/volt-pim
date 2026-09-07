@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import {
   canDeleteProducts,
   canImportCatalog,
+  canManageCategories,
   canManageUsers,
   canWriteProducts,
   type AppRole,
@@ -51,9 +52,16 @@ export async function requireUserAdmin() {
   return user;
 }
 
+export async function requireCategoryWrite() {
+  const user = await requireSessionUser();
+  if (!canManageCategories(user.role)) redirect("/categories");
+  return user;
+}
+
 export {
   canDeleteProducts,
   canWriteProducts,
   canImportCatalog,
   canManageUsers,
+  canManageCategories,
 };

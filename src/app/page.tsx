@@ -1,57 +1,77 @@
-import Link from "next/link";
 import { ButtonLink } from "@/components/Button";
+import { PublicHeader } from "@/components/PublicHeader";
+
+const features = [
+  {
+    title: "Karty SKU",
+    body: "Zdjęcie, EAN, cena, stan, atrybuty PIM i status szkic / aktywny / archiwum.",
+  },
+  {
+    title: "Zamienniki",
+    body: "Powiązania między kartami z podpowiedzią SKU i linkiem do zamiennika.",
+  },
+  {
+    title: "Excel i CSV",
+    body: "Import z raportem błędów per wiersz, eksport z tymi samymi filtrami co lista.",
+  },
+  {
+    title: "Role i audyt",
+    body: "Admin, edytor, podgląd. Historia kto zmienił kartę, import, konto albo kategorię.",
+  },
+  {
+    title: "Edycja zbiorcza",
+    body: "Zaznacz karty na stronie i zmień status albo kategorię za jednym razem.",
+  },
+  {
+    title: "Szukanie w bazie",
+    body: "Filtry, sortowanie i paginacja idą do MariaDB — nie filtrują tylko DOM.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-        <div>
-          <div className="text-[11px] tracking-[0.18em] text-copper uppercase">
-            Hurtownia
-          </div>
-          <div className="text-xl font-semibold">Volt PIM</div>
-        </div>
-        <div className="flex gap-3 text-sm">
-          <Link href="/register" className="px-4 py-2 text-muted hover:text-ink">
-            Rejestracja
-          </Link>
-          <ButtonLink href="/login" variant="dark">
-            Logowanie
-          </ButtonLink>
-        </div>
-      </header>
+    <div className="min-h-dvh">
+      <PublicHeader />
 
-      <main className="mx-auto max-w-5xl px-6 pb-20 pt-10">
-        <p className="text-sm text-copper">Katalog B2B · MariaDB</p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight tracking-tight">
-          Karty produktów, atrybuty i zamienniki — jak w hurtowni, nie jak ToDo.
+      <main className="mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
+        <p className="text-sm text-copper">Katalog B2B · Next.js · MariaDB</p>
+        <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          PIM dla hurtowni: karty produktów, nie lista ToDo.
         </h1>
-        <p className="mt-5 max-w-xl text-lg text-muted">
-          Zaloguj się, żeby wejść do panelu. Karty SKU ze zdjęciem, import
-          Excela i historia zmian zapisują się w bazie.
+        <p className="mt-5 max-w-xl text-base text-muted sm:text-lg">
+          Panel katalogowy z rolami, zdjęciami, importem Excela i historią zmian
+          w bazie. Zbudowany tak, żeby pokazać prawdziwy full-stack — od
+          logowania po paginację.
         </p>
-        <div className="mt-8 flex gap-3">
-          <ButtonLink href="/login">Zaloguj się do panelu</ButtonLink>
-          <ButtonLink href="/register" variant="ghost">
-            Załóż konto
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <ButtonLink href="/login" className="min-h-11">
+            Wejdź do panelu
+          </ButtonLink>
+          <ButtonLink href="/register" variant="ghost" className="min-h-11">
+            Załóż konto (rola: podgląd)
           </ButtonLink>
         </div>
 
-        <section className="mt-16 grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              title: "Karty SKU",
-              body: "Zdjęcie, nazwa, cena, stan, kategoria, status.",
-            },
-            {
-              title: "Zamienniki",
-              body: "Powiązania między produktami, jak w PIM.",
-            },
-            {
-              title: "Historia",
-              body: "Kto zmienił kartę — wpisy z bazy, nie makieta.",
-            },
-          ].map((item) => (
+        <aside className="mt-10 rounded-lg border border-line bg-card p-5 text-sm">
+          <p className="font-medium">Konta demo (hasło haslo123)</p>
+          <ul className="mt-2 space-y-1 text-muted">
+            <li>
+              <span className="font-medium text-ink">admin@voltpim.dev</span> —
+              pełny dostęp, użytkownicy, usuwanie kart
+            </li>
+            <li>
+              <span className="font-medium text-ink">edytor@voltpim.dev</span> —
+              karty, import, kategorie
+            </li>
+            <li>
+              <span className="font-medium text-ink">podglad@voltpim.dev</span>{" "}
+              — tylko odczyt
+            </li>
+          </ul>
+        </aside>
+
+        <section className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((item) => (
             <div
               key={item.title}
               className="rounded-lg border border-line bg-card p-5"

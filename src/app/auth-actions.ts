@@ -36,7 +36,7 @@ export async function registerAction(
         name: parsed.data.name,
         email: parsed.data.email,
         passwordHash: await hash(parsed.data.password, 10),
-        role: "EDITOR",
+        role: "VIEWER",
       },
     });
   } catch (error) {

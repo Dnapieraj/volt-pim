@@ -9,6 +9,8 @@ function isPanelPath(pathname: string) {
     pathname.startsWith("/import") ||
     pathname.startsWith("/audit") ||
     pathname.startsWith("/users") ||
+    pathname.startsWith("/categories") ||
+    pathname.startsWith("/account") ||
     pathname.startsWith("/api/export")
   );
 }
@@ -59,7 +61,7 @@ export const authConfig = {
         session.user.role =
           role === "ADMIN" || role === "EDITOR" || role === "VIEWER"
             ? role
-            : "EDITOR";
+            : "VIEWER";
       }
       return session;
     },

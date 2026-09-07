@@ -1,37 +1,46 @@
 # Volt PIM
 
-Product catalog for wholesale — SKU cards, substitutes, Excel import.
+Product information manager for a Polish electrical wholesaler: SKU cards, photos, substitutes, Excel import/export, roles, and an audit log — persisted in MariaDB.
 
-**Status:** UI + MariaDB. Catalog CRUD, product photos, login/register, roles, user admin, Excel/CSV import, and change history persist to the database.
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6 · MariaDB · NextAuth 5 · Zod · Vitest
 
-## Stack
+This is a portfolio-grade B2B catalog, not a todo list. Recruiters can log in with the demo accounts below and click through a real panel.
 
-- Next.js 16, TypeScript, Tailwind CSS
-- Prisma 6 + MariaDB (XAMPP)
-- NextAuth 5 (credentials, hashed passwords)
+## Co umie
 
-## Roles
-
-| Role | Access |
+| Obszar | Szczegóły |
 | --- | --- |
-| Admin | Full catalog, including delete. Manages users, logins, and roles in **Użytkownicy**. |
-| Editor | Create and edit products, import |
-| Viewer | Read-only list, cards, dashboard, audit |
+| Karty SKU | EAN, cena, VAT, stan, lokalizacja, parametry, atrybuty, zdjęcie, status szkic/aktywny/archiwum |
+| Zamienniki | Podpowiedź SKU z katalogu, na karcie klikalny link |
+| Lista | Szukanie, filtry, sortowanie i paginacja **w bazie** (nie w DOM) |
+| Edycja zbiorcza | Checkboxy → status i/lub kategoria za jednym zapisem |
+| Kategorie | Słownik: dodaj, zmień nazwę, usuń pustą |
+| Excel / CSV | Import z raportem błędów per wiersz, eksport z tymi samymi filtrami |
+| Role | Admin (w tym usuwanie kart i użytkownicy), edytor, podgląd |
+| Rejestracja | Publiczne konto dostaje **podgląd**, nie edytora |
+| Profil | Każdy zmienia swoje imię i hasło |
+| Audyt | Karty, import, bulk, konta i kategorie — z filtrem |
+| UI | Sidebar na desktopie, menu hamburger + karty na telefonie |
 
-Admins edit accounts in the panel at `/users` (name, email/login, password, role). New registrations still get the editor role.
+## Role
 
-Demo accounts after seed (password `haslo123`) — change them in the app if you want:
+| Rola | Dostęp |
+| --- | --- |
+| Admin | Pełny katalog, usuwanie kart, użytkownicy |
+| Edytor | Karty, zdjęcia, import, kategorie, edycja zbiorcza |
+| Podgląd | Lista, karty, pulpit, historia — bez zapisu |
+
+Konta po seedzie (hasło `haslo123`):
 
 - `admin@voltpim.dev` — admin
-- `edytor@voltpim.dev` — editor
-- `podglad@voltpim.dev` — viewer
+- `edytor@voltpim.dev` — edytor
+- `podglad@voltpim.dev` — podgląd
 
-## Database (local)
+## Uruchomienie (lokalnie)
 
-1. Start MySQL in XAMPP.
-2. Create database `voltpim` if it does not exist.
-3. Copy `.env.example` to `.env`.
-4. Run:
+1. MariaDB / MySQL (np. XAMPP), baza `voltpim`.
+2. `cp .env.example .env`
+3. Migracje i dane demo:
 
 ```bash
 npx prisma migrate dev
@@ -39,31 +48,30 @@ npx prisma db seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Otwórz [http://localhost:3000](http://localhost:3000).
 
-`npx prisma studio` opens a table browser.
+```bash
+npm test          # Vitest (query, role, walidacja kart)
+npm run lint
+npx tsc --noEmit
+```
 
-`npx prisma db seed` resets catalog data and upserts the three demo users.
+CI (GitHub Actions) odpala lint, `tsc` i testy przy każdym PR.
 
-## Excel / CSV import
+## Import / eksport
 
-Editors and admins upload a file at `/import`. New SKUs are created, existing SKUs are updated. Invalid rows are skipped and listed in an error report. Logged-in users can download the current catalog from the product list (`/api/export`) as Excel or CSV — the columns match the import template.
+`/import` — edytor i admin. Wymagane: `sku`. Nowa karta potrzebuje `nazwy`. Wzór: `/wzor-import-volt-pim.csv`.
 
-Required column: `sku`. New cards also need `nazwa`. Download the empty template from the import page (`/wzor-import-volt-pim.csv`).
+Eksport z listy produktów (`/api/export`) jako Excel albo CSV. Query string z filtrów listy jest respektowany, więc eksportujesz to, co widzisz.
 
-## Product photos
+Zdjęcia: jedno na kartę, JPEG/PNG/WebP, max 1,5 MB, pliki w `public/uploads/products/` (gitignored).
 
-Editors and admins attach one photo per SKU on create or edit (JPEG, PNG, or WebP, max 1.5 MB). Files land in `public/uploads/products/` (gitignored) and show on the product card, the catalog list, and the form preview. Removing a photo or deleting the card also deletes the file.
+## Architektura (dla recenzji kodu)
 
-## Screens
+- App Router, Server Actions, walidacja Zod po stronie serwera w każdej mutacji
+- RBAC w middleware (`src/proxy.ts`) **i** w akcjach (nie tylko w UI)
+- Prisma + migracje, seed z kilkoma kartami elektrotechnicznymi
+- Paginacja 20 / stronę, indeksy `status` i `updatedAt`
+- Testy jednostkowe czystej logiki (bez bazy) — łatwe do CI
 
-- Landing
-- Login / register (NextAuth, accounts in MariaDB)
-- Dashboard with live counts from MariaDB
-- Product list (search + filters) from the database, with photo thumbnails
-- Product card and edit form (edit hidden for viewers)
-- Product photos (JPEG / PNG / WebP, max 1.5 MB) on the card, list, and form
-- Excel/CSV import with a per-row error report (editors and admins)
-- Excel/CSV export of the live catalog (any logged-in role)
-- Change history from MariaDB (create, edit, delete, import)
-- Users (admin): edit logins, passwords, and roles
+To jest **PIM**, nie ERP: nie ma faktur, zamówień ani ruchów magazynowych. Stan na karcie to pole katalogowe.

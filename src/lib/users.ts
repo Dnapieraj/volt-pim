@@ -1,4 +1,4 @@
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
@@ -158,4 +158,39 @@ export async function deleteManagedUser(
 
   await prisma.user.delete({ where: { id } });
   return { ok: true, id };
+}
+
+export async function updateOwnAccount(
+  id: string,
+  input: { name: string; currentPassword: string; newPassword: string },
+): Promise<UserWriteResult> {
+  const existing = await prisma.user.findUnique({ where: { id } });
+  if (!existing) {
+    return { ok: false, error: "Nie znaleziono konta." };
+  }
+
+  const matches = await compare(input.currentPassword, existing.passwordHash);
+  if (!matches) {
+    return { ok: false, error: "Obecne hasło jest nieprawidłowe." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: {
+        name: input.name,
+        ...(input.newPassword
+          ? { passwordHash: await hash(input.newPassword, 10) }
+          : {}),
+      },
+    });
+    return { ok: true, id };
+  } catch (error) {
+    return (
+      uniqueEmailError(error) ?? {
+        ok: false,
+        error: "Nie udało się zapisać profilu.",
+      }
+    );
+  }
 }

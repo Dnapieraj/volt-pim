@@ -26,6 +26,10 @@ export function canManageUsers(role: AppRole) {
   return role === "ADMIN";
 }
 
+export function canManageCategories(role: AppRole) {
+  return canWriteProducts(role);
+}
+
 export function isCatalogWritePath(pathname: string) {
   if (pathname === "/import" || pathname.startsWith("/import/")) return true;
   if (pathname === "/products/new" || pathname.startsWith("/products/new/")) {

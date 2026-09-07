@@ -1,20 +1,26 @@
 import Link from "next/link";
-import { AuditList } from "@/components/AuditList";
 import { ButtonLink } from "@/components/Button";
+import { AuditList } from "@/components/AuditList";
 import { getAuditLogs } from "@/lib/audit";
 import { getDashboardStats } from "@/lib/catalog";
+import { requireSessionUser } from "@/lib/current-user";
+import { canWriteProducts } from "@/lib/permissions";
+
+export const metadata = { title: "Pulpit" };
 
 export default async function DashboardPage() {
+  const user = await requireSessionUser();
   const [stats, entries] = await Promise.all([
     getDashboardStats(),
     getAuditLogs(6),
   ]);
+  const canWrite = canWriteProducts(user.role);
 
   return (
     <div>
       <h1 className="text-2xl font-semibold">Pulpit</h1>
       <p className="mt-1 text-sm text-muted">
-        Liczby, karty i historia zmian biorą się z MariaDB.
+        Liczby i historia biorą się na żywo z MariaDB.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -41,14 +47,21 @@ export default async function DashboardPage() {
           </Link>
         </section>
         <section className="rounded-lg border border-line bg-card p-5">
-          <h2 className="font-medium">Katalog</h2>
-          <p className="mt-4 text-sm text-muted">
-            Karty SKU, import Excela i historia zmian są już w bazie. Role
-            ustawisz w panelu użytkowników.
+          <h2 className="font-medium">Szybkie akcje</h2>
+          <p className="mt-3 text-sm text-muted">
+            Katalog SKU ze zdjęciami, zamiennikami i importem Excela. Role:
+            admin, edytor, podgląd.
           </p>
-          <ButtonLink href="/products" variant="dark" className="mt-5 w-full">
-            Przejdź do produktów
-          </ButtonLink>
+          <div className="mt-5 flex flex-col gap-2">
+            <ButtonLink href="/products" variant="dark" className="w-full">
+              Przejdź do produktów
+            </ButtonLink>
+            {canWrite ? (
+              <ButtonLink href="/products/new" variant="ghost" className="w-full">
+                Nowa karta
+              </ButtonLink>
+            ) : null}
+          </div>
         </section>
       </div>
     </div>

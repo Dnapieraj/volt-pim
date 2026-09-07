@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/ProductForm";
-import { getCategoryNames, getProductById } from "@/lib/catalog";
+import { getCategoryNames, getProductById, getSkuOptions } from "@/lib/catalog";
 import { requireProductWrite } from "@/lib/current-user";
 import { canDeleteProducts } from "@/lib/permissions";
+
+export const metadata = { title: "Edycja karty" };
 
 export default async function EditProductPage({
   params,
@@ -16,6 +18,7 @@ export default async function EditProductPage({
     getCategoryNames(),
   ]);
   if (!product) notFound();
+  const catalogSkus = await getSkuOptions(product.sku);
 
   return (
     <div className="max-w-3xl">
@@ -25,6 +28,7 @@ export default async function EditProductPage({
         mode="edit"
         product={product}
         categories={categories}
+        catalogSkus={catalogSkus}
         canDelete={canDeleteProducts(user.role)}
       />
     </div>
