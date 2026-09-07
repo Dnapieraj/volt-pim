@@ -107,14 +107,9 @@ Najprostsza droga to **Railway** — jedna platforma hostuje jednocześnie aplik
 4. W zmiennych środowiskowych aplikacji ustaw dodatkowo:
    - `AUTH_SECRET` — dowolny losowy ciąg znaków (np. `openssl rand -base64 32`)
    - `AUTH_URL` — publiczny adres wygenerowany przez Railway (np. `https://twoja-appka.up.railway.app`)
-5. Wdróż. Komenda startowa (`npm start`) sama uruchamia `prisma migrate deploy`, więc schemat bazy tworzy się automatycznie przy pierwszym starcie.
-6. Wgraj dane demo jednym poleceniem z Railway CLI:
+5. Wdróż. Komenda startowa (`npm start`) sama uruchamia `prisma migrate deploy` (tworzy schemat) i bezpieczny seed (wgrywa konta i produkty demo **tylko jeśli baza jest pusta** — kolejne restarty/redeploye niczego nie nadpisują). Nie musisz nic robić ręcznie.
 
-   ```bash
-   railway run npx prisma db seed
-   ```
-
-Po tych krokach masz jeden publiczny link, pod którym działa cała aplikacja razem z bazą danych.
+Po tych krokach masz jeden publiczny link, pod którym działa cała aplikacja razem z bazą danych i danymi demo — od razu gotowe do pokazania.
 
 > Alternatywa: Vercel do hostingu aplikacji + zewnętrzna baza MySQL (np. Railway, Aiven) — wymaga wtedy dwóch kont zamiast jednego, ale też działa bez zmian w kodzie (zmienna `trustHost: true` w konfiguracji NextAuth jest już ustawiona pod dowolną domenę produkcyjną).
 
