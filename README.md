@@ -2,7 +2,7 @@
 
 Product catalog for wholesale — SKU cards, substitutes, Excel import.
 
-**Status:** UI + MariaDB. Catalog CRUD, login/register, roles, user admin, Excel/CSV import, and change history persist to the database.
+**Status:** UI + MariaDB. Catalog CRUD, product photos, login/register, roles, user admin, Excel/CSV import, and change history persist to the database.
 
 ## Stack
 
@@ -51,13 +51,18 @@ Editors and admins upload a file at `/import`. New SKUs are created, existing SK
 
 Required column: `sku`. New cards also need `nazwa`. Download the empty template from the import page (`/wzor-import-volt-pim.csv`).
 
+## Product photos
+
+Editors and admins attach one photo per SKU on create or edit (JPEG, PNG, or WebP, max 1.5 MB). Files land in `public/uploads/products/` (gitignored) and show on the product card, the catalog list, and the form preview. Removing a photo or deleting the card also deletes the file.
+
 ## Screens
 
 - Landing
 - Login / register (NextAuth, accounts in MariaDB)
 - Dashboard with live counts from MariaDB
-- Product list (search + filters) from the database
+- Product list (search + filters) from the database, with photo thumbnails
 - Product card and edit form (edit hidden for viewers)
+- Product photos (JPEG / PNG / WebP, max 1.5 MB) on the card, list, and form
 - Excel/CSV import with a per-row error report (editors and admins)
 - Excel/CSV export of the live catalog (any logged-in role)
 - Change history from MariaDB (create, edit, delete, import)

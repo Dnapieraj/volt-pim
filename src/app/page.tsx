@@ -27,8 +27,8 @@ export default function Home() {
           Karty produktów, atrybuty i zamienniki — jak w hurtowni, nie jak ToDo.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-muted">
-          Zaloguj się, żeby wejść do panelu. Karty SKU, import Excela i
-          historia zmian zapisują się w bazie.
+          Zaloguj się, żeby wejść do panelu. Karty SKU ze zdjęciem, import
+          Excela i historia zmian zapisują się w bazie.
         </p>
         <div className="mt-8 flex gap-3">
           <ButtonLink href="/login">Zaloguj się do panelu</ButtonLink>
@@ -41,7 +41,7 @@ export default function Home() {
           {[
             {
               title: "Karty SKU",
-              body: "Nazwa, cena, stan, kategoria, status.",
+              body: "Zdjęcie, nazwa, cena, stan, kategoria, status.",
             },
             {
               title: "Zamienniki",

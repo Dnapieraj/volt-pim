@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ProductPhoto } from "@/components/ProductPhoto";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { Product, ProductStatus } from "@/lib/product";
 
@@ -104,6 +105,7 @@ export function ProductCatalog({
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line bg-paper text-xs uppercase tracking-wide text-muted">
               <tr>
+                <th className="px-4 py-3 font-medium">Zdjęcie</th>
                 <th className="px-4 py-3 font-medium">SKU</th>
                 <th className="px-4 py-3 font-medium">Nazwa</th>
                 <th className="px-4 py-3 font-medium">Kategoria</th>
@@ -118,6 +120,15 @@ export function ProductCatalog({
                   key={product.id}
                   className="border-b border-line last:border-0"
                 >
+                  <td className="px-4 py-3">
+                    <Link href={`/products/${product.id}`} className="block">
+                      <ProductPhoto
+                        src={product.imagePath}
+                        alt={product.name}
+                        size="thumb"
+                      />
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">
                     <Link
                       href={`/products/${product.id}`}

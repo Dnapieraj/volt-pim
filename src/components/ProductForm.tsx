@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/Button";
 import { DeleteProductButton } from "@/components/DeleteProductButton";
+import { ProductPhoto } from "@/components/ProductPhoto";
 import {
   createProductAction,
   updateProductAction,
@@ -62,6 +63,21 @@ export function ProductForm({
   const [substitutes, setSubstitutes] = useState<string[]>(
     initial.substitutes.length ? initial.substitutes : [""],
   );
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState(initial.imagePath);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [objectUrl]);
+
+  function clearObjectUrl() {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    setObjectUrl(null);
+  }
 
   return (
     <>
@@ -78,6 +94,57 @@ export function ProductForm({
             {state.error}
           </p>
         ) : null}
+
+        <section className="rounded-lg border border-line bg-card p-6">
+          <h2 className="text-sm font-medium">Zdjęcie produktu</h2>
+          <p className="mt-1 text-xs text-muted">
+            JPEG, PNG albo WebP, maksymalnie 1,5 MB. Widać je na karcie i na
+            liście.
+          </p>
+          <div className="mt-4 flex flex-wrap items-start gap-4">
+            <ProductPhoto src={preview} alt={initial.name || "Podgląd"} size="form" />
+            <div className="min-w-[16rem] flex-1 space-y-3">
+              <input
+                ref={fileInput}
+                type="file"
+                name="image"
+                accept="image/jpeg,image/png,image/webp"
+                className="block w-full text-sm text-muted file:mr-3 file:rounded-md file:border file:border-line file:bg-paper file:px-3 file:py-1.5 file:text-sm file:text-ink"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  clearObjectUrl();
+                  const url = URL.createObjectURL(file);
+                  setObjectUrl(url);
+                  setPreview(url);
+                  setRemoveImage(false);
+                }}
+              />
+              {mode === "edit" && initial.imagePath ? (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="removeImage"
+                    value="1"
+                    checked={removeImage}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setRemoveImage(checked);
+                      if (checked) {
+                        clearObjectUrl();
+                        setPreview("");
+                        if (fileInput.current) fileInput.current.value = "";
+                      } else {
+                        setPreview(initial.imagePath);
+                      }
+                    }}
+                  />
+                  Usuń zdjęcie
+                </label>
+              ) : null}
+            </div>
+          </div>
+        </section>
 
         <section className="grid gap-4 rounded-lg border border-line bg-card p-6 sm:grid-cols-2">
           <h2 className="text-sm font-medium sm:col-span-2">Identyfikacja</h2>

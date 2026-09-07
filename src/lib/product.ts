@@ -27,6 +27,7 @@ export type Product = {
   status: ProductStatus;
   description: string;
   notes: string;
+  imagePath: string;
   attributes: ProductAttribute[];
   substitutes: string[];
 };
@@ -64,6 +65,7 @@ export const emptyProduct: Product = {
   status: "DRAFT",
   description: "",
   notes: "",
+  imagePath: "",
   attributes: [{ key: "", value: "" }],
   substitutes: [""],
 };
