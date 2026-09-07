@@ -39,6 +39,13 @@ AUTH_URL="http://localhost:3000"
 EOF
 fi
 
+# Load .env into the environment. The Prisma CLI auto-loads .env, but the plain
+# `node` seed process below does not, so export the vars explicitly.
+set -a
+# shellcheck disable=SC1091
+. ./.env
+set +a
+
 # Apply schema and seed demo data only when the DB is empty (both idempotent).
 npx prisma migrate deploy
 node prisma/seed-if-empty.js
