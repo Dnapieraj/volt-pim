@@ -50,6 +50,15 @@ npm run dev
 
 Otwórz [http://localhost:3000](http://localhost:3000).
 
+Po `git pull origin main` zawsze:
+
+```bash
+npx prisma generate
+npx prisma migrate deploy
+```
+
+Potem zrestartuj `npm run dev`. Bez tego lista produktów wywali Prisma (nowe tabele, np. galeria zdjęć).
+
 ```bash
 npm test          # Vitest (query, role, walidacja kart)
 npm run lint

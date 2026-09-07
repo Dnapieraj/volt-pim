@@ -35,7 +35,7 @@ function mapProduct(row: {
   description: string;
   notes: string;
   imagePath: string;
-  images: { id: string; path: string; sortOrder: number }[];
+  images?: { id: string; path: string; sortOrder: number }[];
   category: { name: string };
   attributes: { key: string; value: string }[];
   substitutes: {
@@ -64,12 +64,12 @@ function mapProduct(row: {
     status: row.status,
     description: row.description,
     notes: row.notes,
-    images: [...row.images]
+    images: [...(row.images ?? [])]
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((item) => ({ id: item.id, path: item.path })),
     imagePath:
-      [...row.images].sort((a, b) => a.sortOrder - b.sortOrder)[0]?.path ??
-      row.imagePath,
+      [...(row.images ?? [])].sort((a, b) => a.sortOrder - b.sortOrder)[0]
+        ?.path ?? row.imagePath,
     attributes: row.attributes.map((item) => ({
       key: item.key,
       value: item.value,
@@ -83,11 +83,15 @@ function mapProduct(row: {
   };
 }
 
-const include = {
+const includeList = {
   category: true,
   attributes: true,
-  images: true,
   substitutes: { include: { substitute: true } },
+} as const;
+
+const include = {
+  ...includeList,
+  images: true,
 } as const;
 
 function orderByFor(sort: CatalogSort): Prisma.ProductOrderByWithRelationInput {
@@ -143,7 +147,7 @@ async function productWhere(
 
 export async function getProducts(): Promise<Product[]> {
   const rows = await prisma.product.findMany({
-    include,
+    include: includeList,
     orderBy: { sku: "asc" },
   });
   return rows.map(mapProduct);
@@ -156,7 +160,7 @@ export async function listProducts(
   if ("empty" in where) return [];
   const rows = await prisma.product.findMany({
     where,
-    include,
+    include: includeList,
     orderBy: orderByFor(query.sort),
   });
   return rows.map(mapProduct);
@@ -172,7 +176,7 @@ export async function searchProducts(query: CatalogQuery) {
   const page = clampPage(query.page, total);
   const rows = await prisma.product.findMany({
     where,
-    include,
+    include: includeList,
     orderBy: orderByFor(query.sort),
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
@@ -195,19 +199,22 @@ export async function getSkuOptions(excludeSku?: string) {
   return rows.filter((row) => row.sku !== excludeSku);
 }
 
+async function findProductDetailed(where: { id: string } | { sku: string }) {
+  try {
+    return await prisma.product.findUnique({ where, include });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientValidationError)) throw error;
+    return prisma.product.findUnique({ where, include: includeList });
+  }
+}
+
 export async function getProductById(id: string): Promise<Product | null> {
-  const row = await prisma.product.findUnique({
-    where: { id },
-    include,
-  });
+  const row = await findProductDetailed({ id });
   return row ? mapProduct(row) : null;
 }
 
 export async function getProductBySku(sku: string): Promise<Product | null> {
-  const row = await prisma.product.findUnique({
-    where: { sku },
-    include,
-  });
+  const row = await findProductDetailed({ sku });
   return row ? mapProduct(row) : null;
 }
 
