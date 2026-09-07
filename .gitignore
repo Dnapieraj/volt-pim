@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# product photos (keep the folder)
+/public/uploads/products/*
+!/public/uploads/products/.gitkeep

@@ -7,6 +7,7 @@ import {
   createProduct,
   deleteProduct,
   getProductById,
+  setProductImagePath,
   updateProduct,
 } from "@/lib/catalog";
 import { getSessionUser, type SessionUser } from "@/lib/current-user";
@@ -15,6 +16,11 @@ import {
   canWriteProducts,
   type AppRole,
 } from "@/lib/permissions";
+import {
+  applyProductImage,
+  deleteManagedImage,
+  readProductImageUpload,
+} from "@/lib/product-image";
 import {
   formId,
   parseProductForm,
@@ -58,15 +64,28 @@ export async function createProductAction(
   const parsed = parseProductForm(formData);
   if (!parsed.ok) return { error: parsed.error };
 
+  const image = await readProductImageUpload(formData);
+  if (!image.ok) return { error: image.error };
+
   const result = await createProduct(parsed.data);
   if (!result.ok) return { error: result.error };
+
+  if (image.intent === "replace") {
+    const saved = await applyProductImage(result.id, "", image);
+    if (saved.ok && saved.imagePath) {
+      await setProductImagePath(result.id, saved.imagePath);
+    }
+  }
 
   await recordAudit({
     actor: actor.user,
     action: "CREATE",
     sku: parsed.data.sku,
     productName: parsed.data.name,
-    summary: `Nowa karta ${parsed.data.sku}`,
+    summary:
+      image.intent === "replace"
+        ? `Nowa karta ${parsed.data.sku} ze zdjęciem`
+        : `Nowa karta ${parsed.data.sku}`,
   });
 
   refreshCatalog(result.id);
@@ -89,15 +108,36 @@ export async function updateProductAction(
   const parsed = parseProductForm(formData);
   if (!parsed.ok) return { error: parsed.error };
 
+  const image = await readProductImageUpload(formData);
+  if (!image.ok) return { error: image.error };
+
+  const existing = await getProductById(id);
   const result = await updateProduct(id, parsed.data);
   if (!result.ok) return { error: result.error };
+
+  if (image.intent !== "keep") {
+    const saved = await applyProductImage(
+      id,
+      existing?.imagePath ?? "",
+      image,
+    );
+    if (!saved.ok) return { error: saved.error };
+    await setProductImagePath(id, saved.imagePath);
+  }
+
+  const photoNote =
+    image.intent === "replace"
+      ? " · nowe zdjęcie"
+      : image.intent === "remove"
+        ? " · usunięto zdjęcie"
+        : "";
 
   await recordAudit({
     actor: actor.user,
     action: "UPDATE",
     sku: parsed.data.sku,
     productName: parsed.data.name,
-    summary: `Zapisano zmiany w karcie ${parsed.data.sku}`,
+    summary: `Zapisano zmiany w karcie ${parsed.data.sku}${photoNote}`,
   });
 
   refreshCatalog(id);
@@ -120,6 +160,10 @@ export async function deleteProductAction(
   const existing = await getProductById(id);
   const result = await deleteProduct(id);
   if (!result.ok) return { error: result.error };
+
+  if (existing?.imagePath) {
+    await deleteManagedImage(existing.imagePath);
+  }
 
   await recordAudit({
     actor: actor.user,

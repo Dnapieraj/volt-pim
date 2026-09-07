@@ -28,6 +28,7 @@ function mapProduct(row: {
   status: Product["status"];
   description: string;
   notes: string;
+  imagePath: string;
   category: { name: string };
   attributes: { key: string; value: string }[];
   substitutes: { substitute: { sku: string } }[];
@@ -54,6 +55,7 @@ function mapProduct(row: {
     status: row.status,
     description: row.description,
     notes: row.notes,
+    imagePath: row.imagePath,
     attributes: row.attributes.map((item) => ({
       key: item.key,
       value: item.value,
@@ -236,6 +238,21 @@ export async function updateProduct(
         },
       }),
     ]);
+    return { ok: true, id };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export async function setProductImagePath(
+  id: string,
+  imagePath: string,
+): Promise<WriteResult> {
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { imagePath },
+    });
     return { ok: true, id };
   } catch (error) {
     return { ok: false, error: prismaErrorMessage(error) };

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/Button";
 import { DeleteProductButton } from "@/components/DeleteProductButton";
+import { ProductPhoto } from "@/components/ProductPhoto";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getProductById } from "@/lib/catalog";
 import { requireSessionUser } from "@/lib/current-user";
@@ -32,29 +33,32 @@ export default async function ProductPage({
   const canDelete = canDeleteProducts(user.role);
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl">
       <Link href="/products" className="text-sm text-copper">
         ← Wróć do listy
       </Link>
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-xs text-muted">{product.sku}</p>
-          <h1 className="mt-1 text-2xl font-semibold">{product.name}</h1>
-          <p className="mt-1 text-sm text-muted">
-            {product.brand}
-            {product.ean ? ` · EAN ${product.ean}` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge status={product.status} />
-          {canWrite ? (
-            <ButtonLink href={`/products/${product.id}/edit`}>
-              Edytuj kartę
-            </ButtonLink>
-          ) : null}
-          {canDelete ? (
-            <DeleteProductButton id={product.id} sku={product.sku} />
-          ) : null}
+      <div className="mt-6 grid gap-6 sm:grid-cols-[minmax(14rem,18rem)_1fr] sm:items-start">
+        <ProductPhoto src={product.imagePath} alt={product.name} />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="font-mono text-xs text-muted">{product.sku}</p>
+            <h1 className="mt-1 text-2xl font-semibold">{product.name}</h1>
+            <p className="mt-1 text-sm text-muted">
+              {product.brand}
+              {product.ean ? ` · EAN ${product.ean}` : ""}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge status={product.status} />
+            {canWrite ? (
+              <ButtonLink href={`/products/${product.id}/edit`}>
+                Edytuj kartę
+              </ButtonLink>
+            ) : null}
+            {canDelete ? (
+              <DeleteProductButton id={product.id} sku={product.sku} />
+            ) : null}
+          </div>
         </div>
       </div>
 
