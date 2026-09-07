@@ -7,7 +7,8 @@ System zarządzania informacjami o produktach (PIM) dla hurtowni elektrotechnicz
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-6-2D3748)
 
-**🔗 Demo na żywo:** _(link po wdrożeniu — zobacz sekcję [Wdrożenie](#wdrożenie-1-link-online))_
+**🔗 Demo na żywo:** [volt-pim-production.up.railway.app](https://volt-pim-production.up.railway.app)
+Zaloguj się kontem demo: `admin@voltpim.dev` / `haslo123` (pozostałe konta — patrz sekcja [Role i konta demo](#role-i-konta-demo)).
 
 ## Zrzuty ekranu
 
