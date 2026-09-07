@@ -36,12 +36,11 @@ export default function Home() {
       <main className="mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
         <p className="text-sm text-copper">Katalog B2B · Next.js · MariaDB</p>
         <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-          PIM dla hurtowni: karty produktów, nie lista ToDo.
+          PIM dla hurtowni: karty produktów w jednym miejscu.
         </h1>
         <p className="mt-5 max-w-xl text-base text-muted sm:text-lg">
-          Panel katalogowy z rolami, zdjęciami, importem Excela i historią zmian
-          w bazie. Zbudowany tak, żeby pokazać prawdziwy full-stack — od
-          logowania po paginację.
+          Panel katalogowy z rolami, zdjęciami, importem Excela i historią
+          zmian w bazie.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <ButtonLink href="/login" className="min-h-11">
