@@ -9,7 +9,7 @@ import {
   createProductAction,
   updateProductAction,
 } from "@/app/(panel)/products/actions";
-import { MAX_PRODUCT_IMAGES } from "@/lib/product-image";
+import { MAX_PRODUCT_IMAGES } from "@/lib/product-image-constants";
 import { emptyActionState } from "@/lib/product-input";
 import {
   categories as defaultCategories,

@@ -1,8 +1,11 @@
 import { copyFile, mkdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import {
+  MAX_PRODUCT_IMAGES,
+  PRODUCT_IMAGE_MAX_BYTES,
+} from "@/lib/product-image-constants";
 
-export const PRODUCT_IMAGE_MAX_BYTES = Math.round(1.5 * 1024 * 1024);
-export const MAX_PRODUCT_IMAGES = 5;
+export { MAX_PRODUCT_IMAGES, PRODUCT_IMAGE_MAX_BYTES };
 
 export function galleryWouldOverflow(kept: number, added: number) {
   return kept + added > MAX_PRODUCT_IMAGES;
