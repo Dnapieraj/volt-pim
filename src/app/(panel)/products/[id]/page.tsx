@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/Button";
 import { DeleteProductButton } from "@/components/DeleteProductButton";
-import { ProductPhoto } from "@/components/ProductPhoto";
+import { DuplicateProductButton } from "@/components/DuplicateProductButton";
+import { ProductGallery } from "@/components/ProductGallery";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getProductById } from "@/lib/catalog";
 import { requireSessionUser } from "@/lib/current-user";
@@ -32,7 +33,7 @@ export default async function ProductPage({
         ← Wróć do listy
       </Link>
       <div className="mt-6 grid gap-6 sm:grid-cols-[minmax(14rem,18rem)_1fr] sm:items-start">
-        <ProductPhoto src={product.imagePath} alt={product.name} />
+        <ProductGallery images={product.images} alt={product.name} />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-mono text-xs text-muted">{product.sku}</p>
@@ -45,9 +46,12 @@ export default async function ProductPage({
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={product.status} />
             {canWrite ? (
-              <ButtonLink href={`/products/${product.id}/edit`}>
-                Edytuj kartę
-              </ButtonLink>
+              <>
+                <ButtonLink href={`/products/${product.id}/edit`}>
+                  Edytuj kartę
+                </ButtonLink>
+                <DuplicateProductButton id={product.id} />
+              </>
             ) : null}
             {canDelete ? (
               <DeleteProductButton id={product.id} sku={product.sku} />

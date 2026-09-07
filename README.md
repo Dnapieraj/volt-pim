@@ -64,7 +64,7 @@ CI (GitHub Actions) odpala lint, `tsc` i testy przy każdym PR.
 
 Eksport z listy produktów (`/api/export`) jako Excel albo CSV. Query string z filtrów listy jest respektowany, więc eksportujesz to, co widzisz.
 
-Zdjęcia: jedno na kartę, JPEG/PNG/WebP, max 1,5 MB, pliki w `public/uploads/products/` (gitignored).
+Zdjęcia: do 5 na kartę, JPEG/PNG/WebP, max 1,5 MB, pliki w `public/uploads/products/` (gitignored). Pierwsze zdjęcie jest miniaturą na liście.
 
 ## Architektura (dla recenzji kodu)
 

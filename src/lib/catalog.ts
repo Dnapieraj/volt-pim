@@ -35,6 +35,7 @@ function mapProduct(row: {
   description: string;
   notes: string;
   imagePath: string;
+  images: { id: string; path: string; sortOrder: number }[];
   category: { name: string };
   attributes: { key: string; value: string }[];
   substitutes: {
@@ -63,7 +64,12 @@ function mapProduct(row: {
     status: row.status,
     description: row.description,
     notes: row.notes,
-    imagePath: row.imagePath,
+    images: [...row.images]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((item) => ({ id: item.id, path: item.path })),
+    imagePath:
+      [...row.images].sort((a, b) => a.sortOrder - b.sortOrder)[0]?.path ??
+      row.imagePath,
     attributes: row.attributes.map((item) => ({
       key: item.key,
       value: item.value,
@@ -80,6 +86,7 @@ function mapProduct(row: {
 const include = {
   category: true,
   attributes: true,
+  images: true,
   substitutes: { include: { substitute: true } },
 } as const;
 
@@ -365,6 +372,93 @@ export async function setProductImagePath(
       data: { imagePath },
     });
     return { ok: true, id };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export async function replaceProductGallery(
+  productId: string,
+  next: { path: string }[],
+): Promise<WriteResult> {
+  try {
+    await prisma.$transaction([
+      prisma.productImage.deleteMany({ where: { productId } }),
+      ...(next.length
+        ? [
+            prisma.productImage.createMany({
+              data: next.map((item, index) => ({
+                productId,
+                path: item.path,
+                sortOrder: index,
+              })),
+            }),
+          ]
+        : []),
+      prisma.product.update({
+        where: { id: productId },
+        data: { imagePath: next[0]?.path ?? "" },
+      }),
+    ]);
+    return { ok: true, id: productId };
+  } catch (error) {
+    return { ok: false, error: prismaErrorMessage(error) };
+  }
+}
+
+export async function duplicateProduct(id: string): Promise<WriteResult> {
+  try {
+    const existing = await prisma.product.findUnique({
+      where: { id },
+      include,
+    });
+    if (!existing) {
+      return { ok: false, error: "Nie znaleziono karty." };
+    }
+
+    let sku = `${existing.sku}-KOPIA`;
+    let n = 2;
+    while (await prisma.product.findUnique({ where: { sku } })) {
+      sku = `${existing.sku}-KOPIA${n}`;
+      n += 1;
+    }
+
+    const row = await prisma.product.create({
+      data: {
+        sku,
+        ean: existing.ean,
+        manufacturerCode: existing.manufacturerCode,
+        name: `${existing.name} (kopia)`,
+        brand: existing.brand,
+        categoryId: existing.categoryId,
+        unit: existing.unit,
+        price: existing.price,
+        vat: existing.vat,
+        stock: existing.stock,
+        minOrder: existing.minOrder,
+        packageQty: existing.packageQty,
+        warehouseLocation: existing.warehouseLocation,
+        weightKg: existing.weightKg,
+        voltage: existing.voltage,
+        current: existing.current,
+        ipRating: existing.ipRating,
+        status: "DRAFT",
+        description: existing.description,
+        notes: existing.notes,
+        attributes: {
+          create: existing.attributes.map((item) => ({
+            key: item.key,
+            value: item.value,
+          })),
+        },
+        substitutes: {
+          create: existing.substitutes.map((item) => ({
+            substituteId: item.substitute.id,
+          })),
+        },
+      },
+    });
+    return { ok: true, id: row.id };
   } catch (error) {
     return { ok: false, error: prismaErrorMessage(error) };
   }

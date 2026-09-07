@@ -4,7 +4,7 @@ import { PublicHeader } from "@/components/PublicHeader";
 const features = [
   {
     title: "Karty SKU",
-    body: "Zdjęcie, EAN, cena, stan, atrybuty PIM i status szkic / aktywny / archiwum.",
+    body: "Do 5 zdjęć, EAN, cena, stan, atrybuty PIM i status szkic / aktywny / archiwum.",
   },
   {
     title: "Zamienniki",

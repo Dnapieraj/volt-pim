@@ -28,6 +28,7 @@ export type Product = {
   description: string;
   notes: string;
   imagePath: string;
+  images: { id: string; path: string }[];
   attributes: ProductAttribute[];
   substitutes: string[];
   substituteLinks: { id: string; sku: string; name: string }[];
@@ -67,6 +68,7 @@ export const emptyProduct: Product = {
   description: "",
   notes: "",
   imagePath: "",
+  images: [],
   attributes: [{ key: "", value: "" }],
   substitutes: [""],
   substituteLinks: [],

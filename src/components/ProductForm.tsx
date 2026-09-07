@@ -3,11 +3,13 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/Button";
 import { DeleteProductButton } from "@/components/DeleteProductButton";
+import { DuplicateProductButton } from "@/components/DuplicateProductButton";
 import { ProductPhoto } from "@/components/ProductPhoto";
 import {
   createProductAction,
   updateProductAction,
 } from "@/app/(panel)/products/actions";
+import { MAX_PRODUCT_IMAGES } from "@/lib/product-image";
 import { emptyActionState } from "@/lib/product-input";
 import {
   categories as defaultCategories,
@@ -66,20 +68,14 @@ export function ProductForm({
     initial.substitutes.length ? initial.substitutes : [""],
   );
   const fileInput = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState(initial.imagePath);
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
-  const [removeImage, setRemoveImage] = useState(false);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
 
   useEffect(() => {
     return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      for (const url of previews) URL.revokeObjectURL(url);
     };
-  }, [objectUrl]);
-
-  function clearObjectUrl() {
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    setObjectUrl(null);
-  }
+  }, [previews]);
 
   return (
     <>
@@ -98,54 +94,51 @@ export function ProductForm({
         ) : null}
 
         <section className="rounded-lg border border-line bg-card p-6">
-          <h2 className="text-sm font-medium">Zdjęcie produktu</h2>
+          <h2 className="text-sm font-medium">Zdjęcia produktu</h2>
           <p className="mt-1 text-xs text-muted">
-            JPEG, PNG albo WebP, maksymalnie 1,5 MB. Widać je na karcie i na
-            liście.
+            Do {MAX_PRODUCT_IMAGES} zdjęć (JPEG, PNG albo WebP, max 1,5 MB
+            każde). Pierwsze jest miniaturą na liście.
           </p>
-          <div className="mt-4 flex flex-wrap items-start gap-4">
-            <ProductPhoto src={preview} alt={initial.name || "Podgląd"} size="form" />
-            <div className="min-w-[16rem] flex-1 space-y-3">
-              <input
-                ref={fileInput}
-                type="file"
-                name="image"
-                accept="image/jpeg,image/png,image/webp"
-                className="block w-full text-sm text-muted file:mr-3 file:rounded-md file:border file:border-line file:bg-paper file:px-3 file:py-1.5 file:text-sm file:text-ink"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  clearObjectUrl();
-                  const url = URL.createObjectURL(file);
-                  setObjectUrl(url);
-                  setPreview(url);
-                  setRemoveImage(false);
-                }}
-              />
-              {mode === "edit" && initial.imagePath ? (
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="removeImage"
-                    value="1"
-                    checked={removeImage}
-                    onChange={(event) => {
-                      const checked = event.target.checked;
-                      setRemoveImage(checked);
-                      if (checked) {
-                        clearObjectUrl();
-                        setPreview("");
-                        if (fileInput.current) fileInput.current.value = "";
-                      } else {
-                        setPreview(initial.imagePath);
-                      }
-                    }}
-                  />
-                  Usuń zdjęcie
+          <div className="mt-4 flex flex-wrap gap-3">
+            {initial.images
+              .filter((image) => !removedIds.includes(image.id))
+              .map((image) => (
+                <label key={image.id} className="w-28 space-y-2 text-xs">
+                  <ProductPhoto src={image.path} alt="" size="thumb" />
+                  <span className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      name="removeImageId"
+                      value={image.id}
+                      onChange={(event) => {
+                        setRemovedIds((ids) =>
+                          event.target.checked
+                            ? [...ids, image.id]
+                            : ids.filter((id) => id !== image.id),
+                        );
+                      }}
+                    />
+                    Usuń
+                  </span>
                 </label>
-              ) : null}
-            </div>
+              ))}
+            {previews.map((src) => (
+              <ProductPhoto key={src} src={src} alt="Nowe zdjęcie" size="thumb" />
+            ))}
           </div>
+          <input
+            ref={fileInput}
+            type="file"
+            name="images"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="mt-4 block w-full text-sm text-muted file:mr-3 file:rounded-md file:border file:border-line file:bg-paper file:px-3 file:py-1.5 file:text-sm file:text-ink"
+            onChange={(event) => {
+              for (const url of previews) URL.revokeObjectURL(url);
+              const files = [...(event.target.files ?? [])];
+              setPreviews(files.map((file) => URL.createObjectURL(file)));
+            }}
+          />
         </section>
 
         <section className="grid gap-4 rounded-lg border border-line bg-card p-6 sm:grid-cols-2">
@@ -482,15 +475,20 @@ export function ProductForm({
         </div>
       </form>
 
-      {mode === "edit" && product && canDelete ? (
-        <div className="mt-8 border-t border-line pt-6">
-          <p className="text-sm text-muted">
-            Usunięcie kasuje kartę z MariaDB. Zamienniki innych SKU, które na nią
-            wskazywały, też znikną.
-          </p>
-          <div className="mt-3">
-            <DeleteProductButton id={product.id} sku={product.sku} />
-          </div>
+      {mode === "edit" && product ? (
+        <div className="mt-8 flex flex-wrap gap-3 border-t border-line pt-6">
+          <DuplicateProductButton id={product.id} />
+          {canDelete ? (
+            <div>
+              <p className="text-sm text-muted">
+                Usunięcie kasuje kartę z MariaDB. Zamienniki innych SKU, które na
+                nią wskazywały, też znikną.
+              </p>
+              <div className="mt-3">
+                <DeleteProductButton id={product.id} sku={product.sku} />
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </>

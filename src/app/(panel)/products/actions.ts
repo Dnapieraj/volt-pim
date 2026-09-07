@@ -7,8 +7,9 @@ import {
   bulkUpdateProducts,
   createProduct,
   deleteProduct,
+  duplicateProduct,
   getProductById,
-  setProductImagePath,
+  replaceProductGallery,
   updateProduct,
 } from "@/lib/catalog";
 import { getSessionUser, type SessionUser } from "@/lib/current-user";
@@ -18,9 +19,12 @@ import {
   type AppRole,
 } from "@/lib/permissions";
 import {
-  applyProductImage,
+  copyManagedImage,
   deleteManagedImage,
-  readProductImageUpload,
+  galleryWouldOverflow,
+  readNewProductImages,
+  readRemovedImageIds,
+  writeManagedImage,
 } from "@/lib/product-image";
 import type { ProductStatus } from "@/lib/product";
 import {
@@ -55,6 +59,41 @@ function refreshCatalog(id?: string) {
   }
 }
 
+async function saveGallery(
+  productId: string,
+  current: { id: string; path: string }[],
+  formData: FormData,
+): Promise<{ ok: true; added: number; removed: number } | { ok: false; error: string }> {
+  const added = await readNewProductImages(formData);
+  if (!added.ok) return added;
+
+  const removeIds = new Set(readRemovedImageIds(formData));
+  const kept = current.filter((image) => !removeIds.has(image.id));
+  if (galleryWouldOverflow(kept.length, added.files.length)) {
+    return {
+      ok: false,
+      error: "Na karcie może być maksymalnie 5 zdjęć.",
+    };
+  }
+
+  for (const image of current) {
+    if (removeIds.has(image.id)) {
+      await deleteManagedImage(image.path);
+    }
+  }
+
+  const next = [...kept.map((image) => ({ path: image.path }))];
+  for (const file of added.files) {
+    const saved = await writeManagedImage(productId, file.buffer, file.ext);
+    if (!saved.ok) return saved;
+    next.push({ path: saved.imagePath });
+  }
+
+  const written = await replaceProductGallery(productId, next);
+  if (!written.ok) return written;
+  return { ok: true, added: added.files.length, removed: removeIds.size };
+}
+
 export async function createProductAction(
   _prev: ProductActionState,
   formData: FormData,
@@ -68,18 +107,17 @@ export async function createProductAction(
   const parsed = parseProductForm(formData);
   if (!parsed.ok) return { error: parsed.error };
 
-  const image = await readProductImageUpload(formData);
-  if (!image.ok) return { error: image.error };
+  const photos = await readNewProductImages(formData);
+  if (!photos.ok) return { error: photos.error };
+  if (galleryWouldOverflow(0, photos.files.length)) {
+    return { error: "Na karcie może być maksymalnie 5 zdjęć." };
+  }
 
   const result = await createProduct(parsed.data);
   if (!result.ok) return { error: result.error };
 
-  if (image.intent === "replace") {
-    const saved = await applyProductImage(result.id, "", image);
-    if (saved.ok && saved.imagePath) {
-      await setProductImagePath(result.id, saved.imagePath);
-    }
-  }
+  const gallery = await saveGallery(result.id, [], formData);
+  if (!gallery.ok) return { error: gallery.error };
 
   await recordAudit({
     actor: actor.user,
@@ -87,8 +125,8 @@ export async function createProductAction(
     sku: parsed.data.sku,
     productName: parsed.data.name,
     summary:
-      image.intent === "replace"
-        ? `Nowa karta ${parsed.data.sku} ze zdjęciem`
+      gallery.added > 0
+        ? `Nowa karta ${parsed.data.sku} ze zdjęciami (${gallery.added})`
         : `Nowa karta ${parsed.data.sku}`,
   });
 
@@ -112,36 +150,26 @@ export async function updateProductAction(
   const parsed = parseProductForm(formData);
   if (!parsed.ok) return { error: parsed.error };
 
-  const image = await readProductImageUpload(formData);
-  if (!image.ok) return { error: image.error };
-
   const existing = await getProductById(id);
   const result = await updateProduct(id, parsed.data);
   if (!result.ok) return { error: result.error };
 
-  if (image.intent !== "keep") {
-    const saved = await applyProductImage(
-      id,
-      existing?.imagePath ?? "",
-      image,
-    );
-    if (!saved.ok) return { error: saved.error };
-    await setProductImagePath(id, saved.imagePath);
-  }
+  const gallery = await saveGallery(id, existing?.images ?? [], formData);
+  if (!gallery.ok) return { error: gallery.error };
 
-  const photoNote =
-    image.intent === "replace"
-      ? " · nowe zdjęcie"
-      : image.intent === "remove"
-        ? " · usunięto zdjęcie"
-        : "";
+  const photoBits = [
+    gallery.added ? `+${gallery.added} zdj.` : "",
+    gallery.removed ? `−${gallery.removed} zdj.` : "",
+  ].filter(Boolean);
 
   await recordAudit({
     actor: actor.user,
     action: "UPDATE",
     sku: parsed.data.sku,
     productName: parsed.data.name,
-    summary: `Zapisano zmiany w karcie ${parsed.data.sku}${photoNote}`,
+    summary: `Zapisano zmiany w karcie ${parsed.data.sku}${
+      photoBits.length ? ` · ${photoBits.join(" ")}` : ""
+    }`,
   });
 
   refreshCatalog(id);
@@ -165,6 +193,9 @@ export async function deleteProductAction(
   const result = await deleteProduct(id);
   if (!result.ok) return { error: result.error };
 
+  for (const image of existing?.images ?? []) {
+    await deleteManagedImage(image.path);
+  }
   if (existing?.imagePath) {
     await deleteManagedImage(existing.imagePath);
   }
@@ -225,4 +256,44 @@ export async function bulkUpdateProductsAction(
     ...emptyBulkState,
     message: `Zapisano ${result.count} kart.`,
   };
+}
+
+export async function duplicateProductAction(
+  _prev: ProductActionState,
+  formData: FormData,
+): Promise<ProductActionState> {
+  const actor = await requireActor(
+    canWriteProducts,
+    "Brak uprawnień do kopiowania kart. Twoja rola to podgląd.",
+  );
+  if ("error" in actor) return actor;
+
+  const id = formId(formData);
+  if (!id) return { error: "Brak identyfikatora karty." };
+
+  const existing = await getProductById(id);
+  const result = await duplicateProduct(id);
+  if (!result.ok) return { error: result.error };
+
+  const copied: { path: string }[] = [];
+  for (const image of existing?.images ?? []) {
+    const saved = await copyManagedImage(result.id, image.path);
+    if (!saved.ok) return { error: saved.error };
+    if (saved.imagePath) copied.push({ path: saved.imagePath });
+  }
+  if (copied.length) {
+    const gallery = await replaceProductGallery(result.id, copied);
+    if (!gallery.ok) return { error: gallery.error };
+  }
+
+  await recordAudit({
+    actor: actor.user,
+    action: "CREATE",
+    sku: existing ? `${existing.sku}-KOPIA` : result.id,
+    productName: existing?.name ?? "",
+    summary: `Zduplikowano kartę ${existing?.sku ?? id}`,
+  });
+
+  refreshCatalog(result.id);
+  redirect(`/products/${result.id}/edit`);
 }

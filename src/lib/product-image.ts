@@ -1,18 +1,21 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const PRODUCT_IMAGE_MAX_BYTES = Math.round(1.5 * 1024 * 1024);
+export const MAX_PRODUCT_IMAGES = 5;
+
+export function galleryWouldOverflow(kept: number, added: number) {
+  return kept + added > MAX_PRODUCT_IMAGES;
+}
 
 const PUBLIC_PREFIX = "/uploads/products/";
 const FILE_NAME_RE = /^[a-z0-9]+-\d+\.(jpg|png|webp)$/i;
 
 export type ImageExt = "jpg" | "png" | "webp";
 
-export type ProductImageUpload =
-  | { ok: true; intent: "keep" }
-  | { ok: true; intent: "remove" }
-  | { ok: true; intent: "replace"; buffer: Buffer; ext: ImageExt }
-  | { ok: false; error: string };
+export type ProductImageRow = { id: string; path: string };
+
+export type NewProductImage = { buffer: Buffer; ext: ImageExt };
 
 export function sniffImageExt(buffer: Buffer): ImageExt | null {
   if (
@@ -63,17 +66,17 @@ function toFsPath(imagePath: string) {
   return join(uploadsDir(), imagePath.slice(PUBLIC_PREFIX.length));
 }
 
-export async function readProductImageUpload(
+export async function readNewProductImages(
   formData: FormData,
-): Promise<ProductImageUpload> {
-  const file = formData.get("image");
-  const remove =
-    String(formData.get("removeImage") ?? "") === "1" ||
-    formData.get("removeImage") === "on";
+): Promise<{ ok: true; files: NewProductImage[] } | { ok: false; error: string }> {
+  const files = formData
+    .getAll("images")
+    .filter((item): item is File => item instanceof File && item.size > 0);
 
-  if (file instanceof File && file.size > 0) {
+  const parsed: NewProductImage[] = [];
+  for (const file of files) {
     if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
-      return { ok: false, error: "Zdjęcie może mieć maksymalnie 1,5 MB." };
+      return { ok: false, error: "Każde zdjęcie może mieć maksymalnie 1,5 MB." };
     }
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = sniffImageExt(buffer);
@@ -83,14 +86,16 @@ export async function readProductImageUpload(
         error: "Dozwolone formaty zdjęcia: JPEG, PNG lub WebP.",
       };
     }
-    return { ok: true, intent: "replace", buffer, ext };
+    parsed.push({ buffer, ext });
   }
+  return { ok: true, files: parsed };
+}
 
-  if (remove) {
-    return { ok: true, intent: "remove" };
-  }
-
-  return { ok: true, intent: "keep" };
+export function readRemovedImageIds(formData: FormData) {
+  return formData
+    .getAll("removeImageId")
+    .map((item) => String(item).trim())
+    .filter(Boolean);
 }
 
 export async function deleteManagedImage(imagePath: string) {
@@ -111,33 +116,26 @@ export async function writeManagedImage(
     return { ok: false as const, error: "Nie udało się zapisać zdjęcia." };
   }
   await mkdir(uploadsDir(), { recursive: true });
-  const name = `${productId}-${Date.now()}.${ext}`;
+  const name = `${productId}-${Date.now()}${Math.floor(Math.random() * 1000)}.${ext}`;
   await writeFile(join(uploadsDir(), name), buffer);
   return { ok: true as const, imagePath: `${PUBLIC_PREFIX}${name}` };
 }
 
-export async function applyProductImage(
-  productId: string,
-  currentPath: string,
-  upload: Extract<ProductImageUpload, { ok: true }>,
-): Promise<{ ok: true; imagePath: string } | { ok: false; error: string }> {
-  if (upload.intent === "keep") {
-    return { ok: true, imagePath: currentPath };
+export async function copyManagedImage(productId: string, sourcePath: string) {
+  if (!isManagedImagePath(sourcePath)) return { ok: true as const, imagePath: "" };
+  const ext = sourcePath.split(".").pop();
+  if (ext !== "jpg" && ext !== "png" && ext !== "webp") {
+    return { ok: true as const, imagePath: "" };
   }
-
-  if (upload.intent === "remove") {
-    await deleteManagedImage(currentPath);
-    return { ok: true, imagePath: "" };
+  if (!/^[a-z0-9]+$/i.test(productId)) {
+    return { ok: false as const, error: "Nie udało się skopiować zdjęcia." };
   }
-
   try {
-    const saved = await writeManagedImage(productId, upload.buffer, upload.ext);
-    if (!saved.ok) return saved;
-    if (currentPath && currentPath !== saved.imagePath) {
-      await deleteManagedImage(currentPath);
-    }
-    return { ok: true, imagePath: saved.imagePath };
+    await mkdir(uploadsDir(), { recursive: true });
+    const name = `${productId}-${Date.now()}${Math.floor(Math.random() * 1000)}.${ext}`;
+    await copyFile(toFsPath(sourcePath), join(uploadsDir(), name));
+    return { ok: true as const, imagePath: `${PUBLIC_PREFIX}${name}` };
   } catch {
-    return { ok: false, error: "Nie udało się zapisać zdjęcia na dysku." };
+    return { ok: false as const, error: "Nie udało się skopiować zdjęcia." };
   }
 }
